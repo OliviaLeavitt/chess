@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Represents a single chess piece
@@ -10,8 +11,14 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessPiece {
+    private final ChessGame.TeamColor pieceColor;
+    private final ChessPiece.PieceType type;
+
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor=pieceColor;
+        this.type=type;
+
     }
 
     /**
@@ -30,14 +37,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
@@ -47,7 +54,52 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+
+    /**
+     * pieceMoves: This method is similar to ChessGame.validMoves, except it does not
+     * honor whose turn it is or check if the king is being
+     * attacked. This method does account for enemy and friendly pieces blocking
+     * movement paths. The pieceMoves method will need to take
+     * into account the type of piece, and the location of other pieces on the board.
+     */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return new ArrayList<>();
+        Collection<ChessMove> validMoves = new ArrayList<>();
+        if (PieceType.KING.equals(type)) {
+
+            List<ChessPosition> potentialMoves = List.of(
+                    new ChessPosition(myPosition.row + 1, myPosition.col),
+                    new ChessPosition(myPosition.row - 1, myPosition.col),
+                    new ChessPosition(myPosition.row, myPosition.col + 1),
+                    new ChessPosition(myPosition.row, myPosition.col - 1),
+                    new ChessPosition(myPosition.row - 1, myPosition.col - 1),
+                    new ChessPosition(myPosition.row + 1, myPosition.col + 1),
+                    new ChessPosition(myPosition.row - 1, myPosition.col + 1),
+                    new ChessPosition(myPosition.row + 1, myPosition.col - 1)
+            );
+
+            for (ChessPosition potentialMove : potentialMoves) {
+                if (potentialMove.getRow() >= 0 && potentialMove.getRow() < 7) {
+                    if (potentialMove.getColumn() >= 0 && potentialMove.getColumn() < 7) {
+
+                        ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
+
+                        if (pieceOnPotentialMove == null || pieceOnPotentialMove.getTeamColor() != pieceColor) {
+                            validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                        }
+                    }
+                }
+            } return validMoves;
+
+        } else if (PieceType.QUEEN.equals(type)) {
+            //RETURN KNIGHT MOVES COLLECTION
+        } else if (PieceType.BISHOP.equals(type)) {
+            //RETURN ROOK MOVES COLLECTION
+        } else if (PieceType.KNIGHT.equals(type)) {
+            //RETURN BISHOP MOVES COLLECTION
+        } else if (PieceType.ROOK.equals(type)) {
+            //RETURN KING MOVES COLLECTION
+        } else if (PieceType.PAWN.equals(type)) {
+            //RETURN queen MOVES COLLECTIon
+        } return null;
     }
 }
