@@ -76,13 +76,10 @@ public class ChessPiece {
                     new ChessPosition(myPosition.row - 1, myPosition.col + 1),
                     new ChessPosition(myPosition.row + 1, myPosition.col - 1)
             );
-
             for (ChessPosition potentialMove : potentialMoves) {
                 if (potentialMove.getRow() >= 1 && potentialMove.getRow() <= 8) {
                     if (potentialMove.getColumn() >= 1 && potentialMove.getColumn() <= 8) {
-
                         ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
-
                         if (pieceOnPotentialMove == null || pieceOnPotentialMove.getTeamColor() != pieceColor) {
                             validMoves.add(new ChessMove(myPosition, potentialMove, null));
                         }
@@ -91,7 +88,33 @@ public class ChessPiece {
             } return validMoves;
 
         } else if (PieceType.QUEEN.equals(type)) {
-            //RETURN KNIGHT MOVES COLLECTION
+            int currRow = myPosition.getRow();
+            int currCol = myPosition.getColumn();
+
+
+            ChessPosition potentialMove = new ChessPosition(currRow, currCol);
+            ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
+
+
+
+            //upward potential moves
+            while (currRow < 9) {
+                if (pieceOnPotentialMove == null) {
+                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                }
+                else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
+                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                }
+                currRow ++;
+            }
+        return validMoves;
+
+
+
+
+
+
+
         } else if (PieceType.BISHOP.equals(type)) {
             //RETURN ROOK MOVES COLLECTION
         } else if (PieceType.KNIGHT.equals(type)) {
