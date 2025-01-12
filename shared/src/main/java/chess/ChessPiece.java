@@ -92,21 +92,35 @@ public class ChessPiece {
             int currCol = myPosition.getColumn();
 
 
-            ChessPosition potentialMove = new ChessPosition(currRow, currCol);
-            ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
-
-
-
             //upward potential moves
             while (currRow < 9) {
+                currRow ++;
+                ChessPosition potentialMove = new ChessPosition(currRow, currCol);
+                ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
+
                 if (pieceOnPotentialMove == null) {
                     validMoves.add(new ChessMove(myPosition, potentialMove, null));
                 }
                 else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
                     validMoves.add(new ChessMove(myPosition, potentialMove, null));
                 }
-                currRow ++;
             }
+            currRow = myPosition.getRow();
+            currCol = myPosition.getColumn();
+
+            //downward potential moves
+            while (currRow > 0) {
+                currRow --;
+                ChessPosition potentialMove = new ChessPosition(currRow, currCol);
+                ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
+                if (pieceOnPotentialMove == null) {
+                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                }
+                else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
+                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                }
+            }
+
         return validMoves;
 
 
