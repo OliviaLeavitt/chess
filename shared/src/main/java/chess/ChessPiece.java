@@ -78,8 +78,8 @@ public class ChessPiece {
             );
 
             for (ChessPosition potentialMove : potentialMoves) {
-                if (potentialMove.getRow() >= 0 && potentialMove.getRow() < 7) {
-                    if (potentialMove.getColumn() >= 0 && potentialMove.getColumn() < 7) {
+                if (potentialMove.getRow() >= 1 && potentialMove.getRow() <= 8) {
+                    if (potentialMove.getColumn() >= 1 && potentialMove.getColumn() <= 8) {
 
                         ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
 
