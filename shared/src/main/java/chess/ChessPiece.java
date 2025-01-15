@@ -115,25 +115,23 @@ public class ChessPiece {
             } return validMoves;
 
         } else if (PieceType.QUEEN.equals(type)) {
-            int currRow = myPosition.getRow();
-            int currCol = myPosition.getColumn();
+            int currRow = myPosition.row;
+            int currCol = myPosition.col;
 
 
             ChessPosition potentialMove = new ChessPosition(currRow, currCol);
-            ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
 
 
-
-            //upward potential moves
+            //upward move
             while (currRow < 9) {
-                if (pieceOnPotentialMove == null) {
+                ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
+                if (pieceOnPotentialMove == null || pieceOnPotentialMove.getTeamColor() != pieceColor) {
                     validMoves.add(new ChessMove(myPosition, potentialMove, null));
+
                 }
-                else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
-                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
-                }
-                currRow ++;
             }
+
+
             return validMoves;
 
 
