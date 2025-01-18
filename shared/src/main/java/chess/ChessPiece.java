@@ -163,7 +163,58 @@ public class ChessPiece {
             return validMoves;
 
         } else if (PieceType.PAWN.equals(type)) {
-            //RETURN queen MOVES COLLECTIon
+
+            ChessPosition upwardMovePosition = new ChessPosition(myPosition.row + 1, myPosition.col);
+            ChessPosition upwardRightDiagonalMovePosition = new ChessPosition(myPosition.row + 1, myPosition.col + 1);
+            ChessPosition upwardLeftDiagonalMovePosition = new ChessPosition(myPosition.row + 1, myPosition.col - 1);
+
+            List<ChessPosition> potentialUpwardMoves = List.of(upwardMovePosition, upwardRightDiagonalMovePosition, upwardLeftDiagonalMovePosition);
+
+            for (ChessPosition potentialMove : potentialUpwardMoves) {
+                ChessPiece pieceOnUpwardMove = board.getPiece(potentialMove);
+                if (potentialMove.getRow() >= 1 && potentialMove.getRow() <= 8) {
+                    if (potentialMove.getColumn() >= 1 && potentialMove.getColumn() <= 8) {
+                        if (pieceColor == ChessGame.TeamColor.WHITE) {
+                            if (pieceOnUpwardMove == null) {
+                                if (potentialMove.getRow() == 8) {
+                                    validMoves.add(new ChessMove(myPosition, potentialMove, PieceType.QUEEN));
+                                    validMoves.add(new ChessMove(myPosition, potentialMove, PieceType.BISHOP));
+                                    validMoves.add(new ChessMove(myPosition, potentialMove, PieceType.ROOK));
+                                    validMoves.add(new ChessMove(myPosition, potentialMove, PieceType.KNIGHT));
+                                } else {
+                                    validMoves.add(new ChessMove(myPosition, potentialMove, null));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ChessPosition downwardMovePosition = new ChessPosition(myPosition.row -1, myPosition.col);
+            ChessPiece pieceOnDownwardMove = board.getPiece(downwardMovePosition);
+            if (downwardMovePosition.getRow() >= 1 && downwardMovePosition.getRow() <= 8) {
+                if (downwardMovePosition.getColumn() >= 1 && downwardMovePosition.getColumn() <= 8) {
+                    if (pieceColor == ChessGame.TeamColor.BLACK) {
+                        if (pieceOnDownwardMove == null) {
+                            if (downwardMovePosition.getRow() == 1) {
+                                validMoves.add(new ChessMove(myPosition, downwardMovePosition, PieceType.QUEEN));
+                                validMoves.add(new ChessMove(myPosition, downwardMovePosition, PieceType.BISHOP));
+                                validMoves.add(new ChessMove(myPosition, downwardMovePosition, PieceType.ROOK));
+                                validMoves.add(new ChessMove(myPosition, downwardMovePosition, PieceType.KNIGHT));
+                            }
+                            else {
+                                validMoves.add(new ChessMove(myPosition, downwardMovePosition, null));
+                            }
+                        }
+                    }
+                }
+            }
+//            ChessPosition downwardRightDiagonalPosition = new ChessPosition(myPosition.row -1, myPosition.col);
+//            ChessPosition downwardRightDiagonalPosition = new ChessPosition(myPosition.row -1, myPosition.col);
+//            ChessPosition downwardRightDiagonalMovePosition = new ChessPosition(myPosition.row -1, myPosition.col);
+
+            return validMoves;
+
+
         } return null;
     }
 
