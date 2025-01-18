@@ -227,9 +227,9 @@ public class ChessPiece {
             );
 
             for (ChessPosition diagonalMove : downwardDiagonalMoves) {
-                ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMove);
                 if (diagonalMove.getRow() >= 1 && diagonalMove.getRow() <= 8) {
                     if (diagonalMove.getColumn() >= 1 && diagonalMove.getColumn() <= 8) {
+                        ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMove);
                         if (pieceColor == ChessGame.TeamColor.BLACK) {
                             if (pieceOnDiagonalMove != null && pieceOnDiagonalMove.getTeamColor() != pieceColor) {
                                 if (diagonalMove.getRow() == 1) {
@@ -255,9 +255,9 @@ public class ChessPiece {
             );
 
             for (ChessPosition diagonalMove : upwardDiagonalMoves) {
-                ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMove);
                 if (diagonalMove.getRow() >= 1 && diagonalMove.getRow() <= 8) {
                     if (diagonalMove.getColumn() >= 1 && diagonalMove.getColumn() <= 8) {
+                        ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMove);
                         if (pieceColor == ChessGame.TeamColor.WHITE) {
                             if (pieceOnDiagonalMove != null && pieceOnDiagonalMove.getTeamColor() != pieceColor) {
                                 if (diagonalMove.getRow() == 8) {
