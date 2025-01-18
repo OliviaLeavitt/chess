@@ -164,17 +164,31 @@ public class ChessPiece {
 
         } else if (PieceType.PAWN.equals(type)) {
 
-            //start moves
+            // Start moves for white pawn
             ChessPosition startUpwardMovePosition = new ChessPosition(myPosition.row + 2, myPosition.col);
-            ChessPiece PieceOnUpwardMoveFromStart = board.getPiece(startUpwardMovePosition);
+            ChessPiece pieceOnIntermediateWhiteMove = board.getPiece(new ChessPosition(myPosition.row + 1, myPosition.col));
 
             if (startUpwardMovePosition.getRow() >= 1 && startUpwardMovePosition.getRow() <= 8) {
                 if (startUpwardMovePosition.getColumn() >= 1 && startUpwardMovePosition.getColumn() <= 8) {
+                    ChessPiece pieceOnUpwardMoveFromStart = board.getPiece(startUpwardMovePosition);
                     if (pieceColor == ChessGame.TeamColor.WHITE) {
-                        if (PieceOnUpwardMoveFromStart == null) {
-                            if (myPosition.getRow() == 2) {
-                                validMoves.add(new ChessMove(myPosition, startUpwardMovePosition, null));
-                            }
+                        if (myPosition.getRow() == 2 && pieceOnUpwardMoveFromStart == null && pieceOnIntermediateWhiteMove == null) {
+                            validMoves.add(new ChessMove(myPosition, startUpwardMovePosition, null));
+                        }
+                    }
+                }
+            }
+
+            //START
+            ChessPosition startDownwardMovePosition = new ChessPosition(myPosition.row - 2, myPosition.col);
+            ChessPiece pieceOnIntermediateBlackMove = board.getPiece(new ChessPosition(myPosition.row - 1, myPosition.col));
+
+            if (startDownwardMovePosition.getRow() >= 1 && startDownwardMovePosition.getRow() <= 8) {
+                if (startDownwardMovePosition.getColumn() >= 1 && startDownwardMovePosition.getColumn() <= 8) {
+                    ChessPiece pieceOnDownwardMoveFromStart = board.getPiece(startDownwardMovePosition);
+                    if (pieceColor == ChessGame.TeamColor.BLACK) {
+                        if (myPosition.getRow() == 7 && pieceOnDownwardMoveFromStart == null && pieceOnIntermediateBlackMove == null) {
+                            validMoves.add(new ChessMove(myPosition, startDownwardMovePosition, null));
                         }
                     }
                 }
