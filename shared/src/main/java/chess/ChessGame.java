@@ -1,6 +1,9 @@
 package chess;
 
+import chess.pieceMoves.PawnMoves;
+
 import java.util.Collection;
+import java.util.List;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,6 +13,7 @@ import java.util.Collection;
  */
 public class ChessGame {
     private TeamColor teamTurn;
+    private ChessBoard board;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
@@ -29,7 +33,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        teamTurn = team;
     }
 
     /**
@@ -48,8 +52,15 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece != null) {
+            return piece.pieceMoves(board, startPosition);
+        }
+        else {
+            return null;
+        }
     }
+
 
     /**
      * Makes a move in a chess game
@@ -58,7 +69,16 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+
+        if (!validMoves.contains(move)) {
+            throw new InvalidMoveException("This move is not valid");
+        }
+        else {
+            ChessPiece piece = board.getPiece(move.getStartPosition());
+            board.addPiece(move.getEndPosition(), piece);
+            board.addPiece(move.getStartPosition(), null);
+        }
     }
 
     /**
@@ -68,7 +88,34 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        TeamColor opponentTeamColor = (teamColor == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
+
+        if (pawnCanCaptureKing(kingPosition, opponentTeamColor)) {
+            return true;
+        }
+        if (rookCanCaptureKing(kingPosition, opponentTeamColor)) {
+            return true;
+        }
+        if (bishopCanCaptureKing(kingPosition, opponentTeamColor)) {
+            return true;
+        }
+
+        if (knightCanCaptureKing(kingPosition, opponentTeamColor)) {
+            return true;
+        }
+        if (queenCanCaptureKing(kingPosition, opponentTeamColor)) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public boolean pawnCanCaptureKing(kingPosition, opponentTeamColor) {
+        PawnMoves pawnMoves = new PawnMoves();
+
+
+
+
     }
 
     /**

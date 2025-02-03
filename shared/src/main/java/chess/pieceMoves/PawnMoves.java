@@ -35,7 +35,12 @@ public class PawnMoves {
                 }
             }
 
-        //diagonals
+        getPawnAttackMoves(myPosition, normalDirectionToMove, promoteRow, board, piece, validMoves);
+
+        return validMoves;
+    }
+
+    public void getPawnAttackMoves(ChessPosition myPosition, int normalDirectionToMove, int promoteRow, ChessBoard board, ChessPiece piece, Collection<ChessMove> validMoves) {
         List<ChessPosition> DiagonalMovePositions = List.of(
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col + 1),
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col - 1)
@@ -43,17 +48,18 @@ public class PawnMoves {
         for (ChessPosition diagonalMovePosition : DiagonalMovePositions) {
             if (isInBounds(diagonalMovePosition)) {
                 ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMovePosition);
-                    if (pieceOnDiagonalMove != null && pieceOnDiagonalMove.getTeamColor() != piece.getTeamColor()) {
-                        if (diagonalMovePosition.getRow() == promoteRow) {
-                            addPromotionMoves(myPosition, diagonalMovePosition, validMoves);
-                        } else {
-                            validMoves.add(new ChessMove(myPosition, diagonalMovePosition, null));
-                        }
+                if (pieceOnDiagonalMove != null && pieceOnDiagonalMove.getTeamColor() != piece.getTeamColor()) {
+                    if (diagonalMovePosition.getRow() == promoteRow) {
+                        addPromotionMoves(myPosition, diagonalMovePosition, validMoves);
+                    } else {
+                        validMoves.add(new ChessMove(myPosition, diagonalMovePosition, null));
                     }
                 }
+            }
         }
-        return validMoves;
+
     }
+
 
     public void addPromotionMoves(ChessPosition myPosition, ChessPosition movePosition, Collection<ChessMove> validMoves) {
         validMoves.add(new ChessMove(myPosition, movePosition, ChessPiece.PieceType.QUEEN));
