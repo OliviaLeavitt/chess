@@ -105,7 +105,6 @@ public class ChessGame {
         }
         return false;
     }
-
     public ChessPosition getKingPosition(TeamColor teamColor) {
         for (ChessPiece piece : board.getAllChessCurrPieces(teamColor)) {
             if (piece.getPieceType() == ChessPiece.PieceType.KING) {
@@ -131,12 +130,12 @@ public class ChessGame {
             if (potentialKingMoves.isEmpty()) {
                 return true;
             }
-            return checkRemainingMovesInCheck(potentialKingMoves, kingPosition, teamColor);
+            return checkIfKingMovesInCheck(potentialKingMoves, kingPosition, teamColor);
         }
         return false;
     }
 
-    public boolean checkRemainingMovesInCheck(Collection<ChessMove> potentialKingMoves, ChessPosition kingPosition, TeamColor teamColor) {
+    public boolean checkIfKingMovesInCheck(Collection<ChessMove> potentialKingMoves, ChessPosition kingPosition, TeamColor teamColor) {
         for (ChessMove move : potentialKingMoves) {
             ChessPosition endPosition = move.getEndPosition();
             ChessPiece tempPieceAtStart = board.getPiece(kingPosition);
@@ -166,7 +165,16 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessPiece> teamPieces = board.getAllChessCurrPieces(teamColor);
+
+        for (ChessPiece piece : teamPieces) {
+            ChessPosition piecePosition = board.getChessPosition(piece);
+            Collection<ChessMove> validMoves = piece.pieceMoves(board, piecePosition);
+            if (!validMoves.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
