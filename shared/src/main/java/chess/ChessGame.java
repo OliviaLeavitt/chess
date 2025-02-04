@@ -138,12 +138,11 @@ public class ChessGame {
     public boolean checkIfKingMovesInCheck(Collection<ChessMove> potentialKingMoves, ChessPosition kingPosition, TeamColor teamColor) {
         for (ChessMove move : potentialKingMoves) {
             ChessPosition endPosition = move.getEndPosition();
-            ChessPiece tempPieceAtStart = board.getPiece(kingPosition);
-            ChessPiece tempPieceAtEnd = board.getPiece(endPosition);
+            ChessPiece tempKing = board.getPiece(kingPosition);
 
-            board.addPiece(endPosition, tempPieceAtStart);
+            board.addPiece(endPosition, tempKing);
             boolean isKingSafe = !isInCheck(teamColor);
-            board.addPiece(kingPosition, tempPieceAtStart);
+            board.addPiece(kingPosition, tempKing);
 
 
             if (isKingSafe) {
