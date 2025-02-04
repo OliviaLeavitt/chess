@@ -52,7 +52,8 @@ public class PawnMoves {
                     if (diagonalMovePosition.getRow() == promoteRow) {
                         addPromotionMoves(myPosition, diagonalMovePosition, validMoves);
                     } else {
-                        validMoves.add(new ChessMove(myPosition, diagonalMovePosition, null));
+                        ChessMove diagonalAttackMove = new ChessMove(myPosition, diagonalMovePosition, null);
+                        validMoves.add(diagonalAttackMove);
                     }
                 }
             }
