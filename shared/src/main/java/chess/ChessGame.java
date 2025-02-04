@@ -74,7 +74,7 @@ public class ChessGame {
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
 
         if (!validMoves.contains(move)) {
-            throw new InvalidMoveException("This move is not valid");
+            throw new InvalidMoveException("Invalid move: " + move);
         }
         else {
             ChessPiece piece = board.getPiece(move.getStartPosition());
@@ -142,12 +142,9 @@ public class ChessGame {
             ChessPiece tempPieceAtEnd = board.getPiece(endPosition);
 
             board.addPiece(endPosition, tempPieceAtStart);
-            board.addPiece(kingPosition, null);
-
             boolean isKingSafe = !isInCheck(teamColor);
-
             board.addPiece(kingPosition, tempPieceAtStart);
-            board.addPiece(endPosition, tempPieceAtEnd);
+
 
             if (isKingSafe) {
                 return false;
