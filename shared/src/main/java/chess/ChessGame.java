@@ -125,34 +125,38 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         ChessPosition kingPosition = getKingPosition(teamColor);
         ChessPiece kingPiece = board.getPiece(kingPosition);
+        Collection<ChessMove> potentialKingMoves = kingPiece.pieceMoves(board, kingPosition);
+
         if (isInCheck(teamColor)) {
-            Collection<ChessMove> potentialKingMoves = kingPiece.pieceMoves(board, kingPosition);
             if (potentialKingMoves.isEmpty()) {
                 return true;
             }
-            //CHECK IF REMAINING MOVES ARE SAFE
-            for (ChessMove move : potentialKingMoves) {
-                ChessPosition endPosition = move.getEndPosition();
-                ChessPiece tempPieceAtStart = board.getPiece(kingPosition);
-                ChessPiece tempPieceAtEnd = board.getPiece(endPosition);
-
-                board.addPiece(endPosition, tempPieceAtStart);
-                board.addPiece(kingPosition, null);
-
-                boolean isKingSafe = !isInCheck(teamColor);
-
-                board.addPiece(kingPosition, tempPieceAtStart);
-                board.addPiece(endPosition, tempPieceAtEnd);
-
-                if (isKingSafe) {
-                    return false;
-                }
-            }
-            return true;
-
+            return checkRemainingMovesInCheck(potentialKingMoves, kingPosition, teamColor);
         }
         return false;
     }
+
+    public boolean checkRemainingMovesInCheck(Collection<ChessMove> potentialKingMoves, ChessPosition kingPosition, TeamColor teamColor) {
+        for (ChessMove move : potentialKingMoves) {
+            ChessPosition endPosition = move.getEndPosition();
+            ChessPiece tempPieceAtStart = board.getPiece(kingPosition);
+            ChessPiece tempPieceAtEnd = board.getPiece(endPosition);
+
+            board.addPiece(endPosition, tempPieceAtStart);
+            board.addPiece(kingPosition, null);
+
+            boolean isKingSafe = !isInCheck(teamColor);
+
+            board.addPiece(kingPosition, tempPieceAtStart);
+            board.addPiece(endPosition, tempPieceAtEnd);
+
+            if (isKingSafe) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
