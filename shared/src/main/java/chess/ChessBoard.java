@@ -63,6 +63,8 @@ public class ChessBoard {
              * position
              */
             public ChessPiece getPiece(ChessPosition position) {
+                boolean row = position.getRow() > 8 || position.getRow() < 1;
+                boolean col = position.getColumn() > 8 || position.getColumn() < 1;
                 return squares[position.getRow() -1 ][position.getColumn() -1 ];
             }
 

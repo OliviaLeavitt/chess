@@ -13,6 +13,12 @@ public class ChessPosition {
     public final int col;
 
     public ChessPosition(int row, int col) {
+        if (row > 8 || row <1) {
+            System.out.println("row out of bounds: " + row);
+        }
+        if (col > 8 || col <1) {
+            System.out.println("col out of bounds: "+ col);
+        }
         this.row = row;
         this.col = col;
     }
