@@ -29,7 +29,7 @@ public class ChessBoard {
         squares[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
-    public ChessPosition getChessPosition(ChessPiece piece) {
+    public ChessPosition getKingOnBoardPosition(ChessPiece piece) {
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
                 ChessPosition position = new ChessPosition(row + 1, column + 1);

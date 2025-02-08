@@ -57,11 +57,14 @@ public class ChessGame {
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
         TeamColor teamColor = piece.getTeamColor();
+
+
         ArrayList<ChessMove> validMoves = new ArrayList<>();
         Collection<ChessMove> pieceMoves = piece.pieceMoves(board, startPosition);
         for (ChessMove move : pieceMoves) {
             ChessPosition endPosition = move.getEndPosition();
             ChessPiece endPiece = board.getPiece(endPosition);
+
 
             //temp move
             board.addPiece(endPosition, piece);
@@ -92,10 +95,9 @@ public class ChessGame {
         TeamColor currTeamTurn = getTeamTurn();
         ChessPosition movePosition = move.getStartPosition();
 
-
-
         if (board.getPiece(movePosition) == null) {
             throw new InvalidMoveException("No piece on move: " + move);
+
         }
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
 
@@ -171,7 +173,7 @@ public class ChessGame {
                 ChessPosition opposingPiecePosition = new ChessPosition(row, col);
 
                 ChessPiece opposingChessPiece = board.getPiece(opposingPiecePosition);
-                if (opposingChessPiece != null) {
+                if (opposingChessPiece != null && opposingChessPiece.getTeamColor() != teamColor) {
                     Collection<ChessMove> opposingChessPieceMoves = opposingChessPiece.pieceMoves(board, opposingPiecePosition);
 
                     for (ChessMove move : opposingChessPieceMoves) {
@@ -190,7 +192,7 @@ public class ChessGame {
     public ChessPosition getKingPosition(TeamColor teamColor) {
         for (ChessPiece piece : board.getAllChessCurrPieces(teamColor)) {
             if (piece.getPieceType() == ChessPiece.PieceType.KING) {
-                return board.getChessPosition(piece);
+                return board.getKingOnBoardPosition(piece);
             }
         }
         return null;
