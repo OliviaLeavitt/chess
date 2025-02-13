@@ -50,3 +50,6 @@ java -jar client/target/client-jar-with-dependencies.jar
 
 ♕ 240 Chess Client: chess.ChessPiece@7852e922
 ```
+![Untitled](https://github.com/user-attachments/assets/d82b6b87-1135-4146-ab42-f9dc29ee3fab)
+
+
