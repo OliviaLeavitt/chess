@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import java.util.Collection;
 
 public class BishopMoves {
-    public Collection<ChessMove> pieceMoves (ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece) {
+    public Collection<ChessMove> pieceMoves(ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece) {
 
         int currRow = myPosition.row;
         int currCol = myPosition.col;

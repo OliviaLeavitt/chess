@@ -13,11 +13,11 @@ public class ChessPosition {
     public final int col;
 
     public ChessPosition(int row, int col) {
-        if (row > 8 || row <1) {
+        if (row > 8 || row < 1) {
             System.out.println("row out of bounds: " + row);
         }
-        if (col > 8 || col <1) {
-            System.out.println("col out of bounds: "+ col);
+        if (col > 8 || col < 1) {
+            System.out.println("col out of bounds: " + col);
         }
         this.row = row;
         this.col = col;
@@ -41,9 +41,13 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessPosition that=(ChessPosition) o;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPosition that = (ChessPosition) o;
         return row == that.row && col == that.col;
     }
 

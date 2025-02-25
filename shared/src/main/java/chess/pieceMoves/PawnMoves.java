@@ -17,8 +17,8 @@ public class PawnMoves {
         ChessPiece pieceOnIntermediateWhiteMove = board.getPiece(new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col));
         if (isInBounds(startUpwardMovePosition)) {
             ChessPiece pieceOnUpwardMoveFromStart = board.getPiece(startUpwardMovePosition);
-                if (myPosition.getRow() == startRow && pieceOnUpwardMoveFromStart == null && pieceOnIntermediateWhiteMove == null) {
-                    validMoves.add(new ChessMove(myPosition, startUpwardMovePosition, null));
+            if (myPosition.getRow() == startRow && pieceOnUpwardMoveFromStart == null && pieceOnIntermediateWhiteMove == null) {
+                validMoves.add(new ChessMove(myPosition, startUpwardMovePosition, null));
             }
         }
 
@@ -26,14 +26,14 @@ public class PawnMoves {
         ChessPosition normalProgressPosition = new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col);
         ChessPiece pieceOnNormalProgressMove = board.getPiece(normalProgressPosition);
         if (isInBounds(normalProgressPosition)) {
-                if (pieceOnNormalProgressMove == null) {
-                    if (normalProgressPosition.getRow() == promoteRow) {
-                        addPromotionMoves(myPosition, normalProgressPosition, validMoves);
-                    } else {
-                        validMoves.add(new ChessMove(myPosition, normalProgressPosition, null));
-                    }
+            if (pieceOnNormalProgressMove == null) {
+                if (normalProgressPosition.getRow() == promoteRow) {
+                    addPromotionMoves(myPosition, normalProgressPosition, validMoves);
+                } else {
+                    validMoves.add(new ChessMove(myPosition, normalProgressPosition, null));
                 }
             }
+        }
 
         getPawnAttackMoves(myPosition, normalDirectionToMove, promoteRow, board, piece, validMoves);
 

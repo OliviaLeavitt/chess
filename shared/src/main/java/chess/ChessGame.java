@@ -103,16 +103,14 @@ public class ChessGame {
 
         if (!validMoves.contains(move)) {
             throw new InvalidMoveException("Invalid move: " + move);
-        }
-        else {
+        } else {
             ChessPiece piece = board.getPiece(move.getStartPosition());
             if (currTeamTurn != piece.getTeamColor()) {
                 throw new InvalidMoveException("Wrong team turn: " + move);
             }
             if (move.getPromotionPiece() != null) {
                 board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
-            }
-            else {
+            } else {
                 board.addPiece(move.getEndPosition(), piece);
             }
             board.addPiece(move.getStartPosition(), null);
@@ -144,21 +142,21 @@ public class ChessGame {
 
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            for (int row =1; row<=8; row++) {
-                for (int col =1; col<=8; col++) {
-                    ChessPosition position = new ChessPosition(row,col);
+            for (int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    ChessPosition position = new ChessPosition(row, col);
                     ChessPiece piece = board.getPiece(position);
-                    if ((piece != null) && teamColor == piece.getTeamColor())
+                    if ((piece != null) && teamColor == piece.getTeamColor()) {
                         if (!validMoves(position).isEmpty()) {
                             return false;
                         }
+                    }
                 }
 
             }
             return true;
 
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -168,7 +166,7 @@ public class ChessGame {
         ArrayList<ChessPosition> attackers = new ArrayList<>();
         ChessPosition myKingPosition = getKingPosition(teamColor);
 
-        for (int row =1; row<=8; row++) {
+        for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition opposingPiecePosition = new ChessPosition(row, col);
 
@@ -208,21 +206,21 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-            for (int row =1; row<=8; row++) {
-                for (int col =1; col<=8; col++) {
-                    ChessPosition position = new ChessPosition(row,col);
+            for (int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    ChessPosition position = new ChessPosition(row, col);
                     ChessPiece piece = board.getPiece(position);
-                    if ((piece != null) && teamColor == piece.getTeamColor())
+                    if ((piece != null) && teamColor == piece.getTeamColor()) {
                         if (!validMoves(position).isEmpty()) {
                             return false;
                         }
+                    }
                 }
 
             }
             return true;
 
-        }
-        else {
+        } else {
             return false;
         }
     }

@@ -1,9 +1,11 @@
 package chess;
+
 import chess.pieceMoves.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+
 /**
  * Represents a single chess piece
  * <p>
@@ -13,10 +15,12 @@ import java.util.Objects;
 public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
+
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.pieceColor=pieceColor;
-        this.type=type;
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
+
     @Override
     public String toString() {
         return "ChessPiece{" +
@@ -24,6 +28,7 @@ public class ChessPiece {
                 ", type=" + type +
                 '}';
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -35,10 +40,12 @@ public class ChessPiece {
         ChessPiece that = (ChessPiece) o;
         return pieceColor == that.pieceColor && type == that.type;
     }
+
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
     }
+
     /**
      * The various different chess piece options
      */
@@ -50,18 +57,21 @@ public class ChessPiece {
         ROOK,
         PAWN
     }
+
     /**
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
         return pieceColor;
     }
+
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
         return type;
     }
+
     /**
      * Calculates all the positions a chess piece can move to
      * Does not take into account moves that are illegal due to leaving the king in
@@ -76,14 +86,15 @@ public class ChessPiece {
         } else if (PieceType.QUEEN.equals(type)) {
             return new QueenMoves().pieceMoves(myPosition, board, validMoves, this);
         } else if (PieceType.BISHOP.equals(type)) {
-            return new BishopMoves().pieceMoves(myPosition, board, validMoves,this);
+            return new BishopMoves().pieceMoves(myPosition, board, validMoves, this);
         } else if (PieceType.KNIGHT.equals(type)) {
             return new KnightMoves().pieceMoves(myPosition, board, validMoves, this);
         } else if (PieceType.ROOK.equals(type)) {
-            return new RookMoves().pieceMoves(myPosition, board, validMoves,this);
+            return new RookMoves().pieceMoves(myPosition, board, validMoves, this);
         } else if (PieceType.PAWN.equals(type)) {
             return new PawnMoves().pieceMoves(myPosition, board, validMoves, this);
-        } return null;
+        }
+        return null;
     }
 
     public void addValidMovesForADirection(int currCol, int currRow, int colIncrement, int rowIncrement, ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves) {
@@ -94,12 +105,10 @@ public class ChessPiece {
             ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
             if (pieceOnPotentialMove == null) {
                 validMoves.add(new ChessMove(myPosition, potentialMove, null));
-            }
-            else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
+            } else if (pieceOnPotentialMove.getTeamColor() != pieceColor) {
                 validMoves.add(new ChessMove(myPosition, potentialMove, null));
                 break;
-            }
-            else {
+            } else {
                 break;
             }
             currCol += colIncrement;

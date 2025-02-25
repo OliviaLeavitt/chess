@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class KingMoves {
-    public Collection<ChessMove> pieceMoves (ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece) {
+    public Collection<ChessMove> pieceMoves(ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece) {
         List<ChessPosition> potentialMoves = List.of(
                 new ChessPosition(myPosition.row + 1, myPosition.col),
                 new ChessPosition(myPosition.row - 1, myPosition.col),
@@ -30,6 +30,7 @@ public class KingMoves {
                     }
                 }
             }
-        } return validMoves;
+        }
+        return validMoves;
     }
 }
