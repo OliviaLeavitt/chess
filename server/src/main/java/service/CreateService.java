@@ -5,30 +5,22 @@
 //import dataaccess.UserDAO;
 //import model.Auth;
 //import model.Game;
-//import model.User;
-//import service.results.ListResult;
 //
-//import java.util.Collection;
-//
-//public class ListService {
-//    private final UserDAO userDataAccess;
+//public class CreateService {
 //    private final AuthDAO authDataAccess;
 //    private final GameDAO gameDataAccess;
 //
-//    public ListService(UserDAO userDataAccess, AuthDAO authDataAccess, GameDAO gameDataAccess) {
-//        this.userDataAccess = userDataAccess;
+//    public CreateService(UserDAO userDataAccess, AuthDAO authDataAccess, GameDAO gameDataAccess) {
 //        this.authDataAccess = authDataAccess;
 //        this.gameDataAccess = gameDataAccess;
+//
 //    }
 //
-//    public Collection<Game> listGames(String authToken) throws ResponseException {
-//
+//    public Game createGame(String authToken, Game gameName) throws ResponseException {
 //        Auth authData = authDataAccess.getAuth(authToken);
 //        if (authData == null) {
 //            throw new ResponseException(401, "Error: unauthorized");
 //        }
-//
-//        gameDataAccess.listGames();
-//        return new ListResult()
+//        return gameDataAccess.createGame(gameName);
 //    }
 //}
