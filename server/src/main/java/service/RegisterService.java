@@ -1,6 +1,8 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.Auth;
@@ -11,8 +13,8 @@ import java.util.UUID;
 
 public class RegisterService {
 
-    private static UserDAO userDataAccess;
-    private static AuthDAO authDataAccess;
+    private static UserDAO userDataAccess = new MemoryUserDAO();
+    private static AuthDAO authDataAccess = new MemoryAuthDAO();
 
     public RegisterService(UserDAO userDataAccess, AuthDAO authDataAccess) {
         RegisterService.userDataAccess = userDataAccess;
