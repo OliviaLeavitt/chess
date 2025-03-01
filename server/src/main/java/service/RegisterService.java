@@ -23,9 +23,17 @@ public class RegisterService {
     }
 
     public static RegisterResult register(User user) throws ResponseException {
+        System.out.println(userDataAccess.toString());
+        System.out.println(user);
+
+
+        if (user.username() == null || user.password() == null || user.email() == null) {
+            throw new ResponseException(400, "Error: bad request");
+        }
         if (userDataAccess.getUser(user.username()) != null) {
             throw new ResponseException(403, "Error: already taken");
         }
+
         userDataAccess.createUser(user);
         String authToken = UUID.randomUUID().toString();
         Auth authData = new Auth(authToken, user.username());

@@ -32,15 +32,30 @@ public class Server {
     }
 
     private Object registerUser(Request req, Response res) throws ResponseException {
-        var user = new Gson().fromJson(req.body(), User.class);
-        RegisterResult registerResult = RegisterService.register(user);
-        return new Gson().toJson(registerResult);
+        try {
+            var user = new Gson().fromJson(req.body(), User.class);
+            RegisterResult registerResult = RegisterService.register(user);
+            res.status(200);
+            return new Gson().toJson(registerResult);
+
+        } catch (ResponseException exception) {
+            res.status(exception.StatusCode());
+            return exception.toJson();
+        } catch (Exception exception) {
+            res.status(500);
+            return new ResponseException(500, "Error: " + exception.getMessage()).toJson();
+        }
     }
 
     private Object clear(Request req, Response res) throws ResponseException {
-        ClearService.clear();
-        res.status(204);
-        return "";
+        try {
+            ClearService.clear();
+            res.status(200);
+            return "";
+        } catch (Exception exception) {
+            res.status(500);
+            return new ResponseException(500, "Error: " + exception.getMessage()).toJson();
+        }
     }
 
 
