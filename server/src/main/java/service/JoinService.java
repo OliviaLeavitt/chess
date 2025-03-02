@@ -2,11 +2,9 @@ package service;
 
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
-import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.Game;
-import service.results.JoinResult;
 
 public class JoinService {
     private final AuthDAO authDataAccess;

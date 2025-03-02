@@ -5,6 +5,7 @@ import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.Game;
+import service.results.CreateResult;
 
 public class CreateService {
     private final AuthDAO authDataAccess;
@@ -16,7 +17,7 @@ public class CreateService {
 
     }
 
-    public Game createGame(String authToken, Game gameName) throws ResponseException {
+    public CreateResult createGame(String authToken, Game gameName) throws ResponseException {
         Auth authData = authDataAccess.getAuth(authToken);
         if (authData == null) {
             throw new ResponseException(401, "Error: unauthorized");
@@ -24,7 +25,9 @@ public class CreateService {
         if (gameName == null) {
             throw new ResponseException(400, "Error: bad request");
         }
+        Game createdGame = gameDataAccess.createGame(gameName);
+        int gameID = createdGame.gameID();
 
-        return gameDataAccess.createGame(gameName);
+        return new CreateResult(gameID);
     }
 }

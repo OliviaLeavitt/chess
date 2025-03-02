@@ -57,9 +57,9 @@ public class Server {
         try {
             Game game = new Gson().fromJson(req.body(), Game.class);
             CreateService createService = new CreateService(authDAO, gameDAO);
-            Game createdGame = createService.createGame(authToken, game);
+            CreateResult gameResult = createService.createGame(authToken, game);
             res.status(200);
-            return new Gson().toJson(createdGame);
+            return new Gson().toJson(gameResult);
         } catch (ResponseException exception) {
             res.status(exception.StatusCode());
             return exception.toJson();
@@ -90,9 +90,9 @@ public class Server {
         String authToken = req.headers("authorization");
         try {
             LogoutService logoutService = new LogoutService(authDAO);
-            LogoutResult logoutResult = logoutService.logout(authToken);
+            logoutService.logout(authToken);
             res.status(200);
-            return new Gson().toJson(logoutResult);
+            return "";
         } catch (ResponseException exception) {
             res.status(exception.StatusCode());
             return exception.toJson();
