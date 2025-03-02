@@ -1,8 +1,6 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.Auth;
@@ -13,19 +11,17 @@ import java.util.UUID;
 
 public class RegisterService {
 
-    private static UserDAO userDataAccess = new MemoryUserDAO();
-    private static AuthDAO authDataAccess = new MemoryAuthDAO();
+    private final UserDAO userDataAccess;
+    private final AuthDAO authDataAccess;
 
     public RegisterService(UserDAO userDataAccess, AuthDAO authDataAccess) {
-        RegisterService.userDataAccess = userDataAccess;
-        RegisterService.authDataAccess = authDataAccess;
-
+        this.userDataAccess = userDataAccess;
+        this.authDataAccess = authDataAccess;
     }
 
-    public static RegisterResult register(User user) throws ResponseException {
+    public RegisterResult register(User user) throws ResponseException {
         System.out.println(userDataAccess.toString());
         System.out.println(user);
-
 
         if (user.username() == null || user.password() == null || user.email() == null) {
             throw new ResponseException(400, "Error: bad request");
@@ -40,5 +36,4 @@ public class RegisterService {
         authDataAccess.createAuth(authData);
         return new RegisterResult(user.username(), authToken);
     }
-
 }

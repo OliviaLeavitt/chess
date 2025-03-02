@@ -1,3 +1,6 @@
 package service.results;
 
-public record ListResult(String username, String authToken) {}
+import model.Game;
+import java.util.Collection;
+
+public record ListResult(Collection<Game> games) {}

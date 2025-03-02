@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] squares;
+    private final ChessPiece[][] squares;
 
 
     public ChessBoard() {

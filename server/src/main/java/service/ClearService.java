@@ -10,18 +10,18 @@ import exception.ResponseException;
 import service.results.ClearResult;
 
 public class ClearService {
-    private static UserDAO userDataAccess = new MemoryUserDAO();
-    private static AuthDAO authDataAccess = new MemoryAuthDAO();
-    private static GameDAO gameDataAccess = new MemoryGameDAO();
+    private final UserDAO userDataAccess;
+    private final AuthDAO authDataAccess;
+    private final GameDAO gameDataAccess;
 
     public ClearService(UserDAO userDataAccess, AuthDAO authDataAccess, GameDAO gameDataAccess) {
-        ClearService.userDataAccess = userDataAccess;
-        ClearService.authDataAccess = authDataAccess;
-        ClearService.gameDataAccess = gameDataAccess;
+        this.userDataAccess = userDataAccess;
+        this.authDataAccess = authDataAccess;
+        this.gameDataAccess = gameDataAccess;
 
     }
 
-    public static ClearResult clear() throws ResponseException {
+    public ClearResult clear() throws ResponseException {
         userDataAccess.clear();
         authDataAccess.clear();
         gameDataAccess.clear();
