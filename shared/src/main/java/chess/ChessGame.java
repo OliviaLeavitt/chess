@@ -173,19 +173,23 @@ public class ChessGame {
 
                 ChessPiece opposingChessPiece = board.getPiece(opposingPiecePosition);
                 if (opposingChessPiece != null && opposingChessPiece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> opposingChessPieceMoves = opposingChessPiece.pieceMoves(board, opposingPiecePosition);
-
-                    for (ChessMove move : opposingChessPieceMoves) {
-                        if (move.getEndPosition().equals(myKingPosition)) {
-                            attackers.add(opposingPiecePosition);
-
-                        }
-                    }
+                    getAttackers(attackers, opposingPiecePosition, opposingChessPiece, myKingPosition);
 
                 }
             }
         }
         return attackers;
+    }
+
+    public void getAttackers(ArrayList<ChessPosition> attackers, ChessPosition opposingPiecePosition, ChessPiece opposingChessPiece, ChessPosition myKingPosition) {
+        Collection<ChessMove> opposingChessPieceMoves = opposingChessPiece.pieceMoves(board, opposingPiecePosition);
+
+        for (ChessMove move : opposingChessPieceMoves) {
+            if (move.getEndPosition().equals(myKingPosition)) {
+                attackers.add(opposingPiecePosition);
+
+            }
+        }
     }
 
     public ChessPosition getKingPosition(TeamColor teamColor) {
