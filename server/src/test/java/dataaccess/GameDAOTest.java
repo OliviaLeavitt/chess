@@ -47,7 +47,7 @@ public class GameDAOTest {
     }
 
     @Test
-    void getGame_ShouldReturnCorrectGame() throws ResponseException {
+    void getGame() throws ResponseException {
         Game game0 = new Game(0, "white1", "black1", "game1", new ChessGame());
         Game game1 = new Game(0, "white2", "black2", "game2", new ChessGame());
 

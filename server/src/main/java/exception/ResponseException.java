@@ -29,4 +29,8 @@ public class ResponseException extends Exception {
     public int statusCode() {
         return statusCode;
     }
+
+    public int StatusCode() {
+        return statusCode;
+    }
 }
