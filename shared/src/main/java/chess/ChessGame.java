@@ -181,7 +181,8 @@ public class ChessGame {
         return attackers;
     }
 
-    public void getAttackers(ArrayList<ChessPosition> attackers, ChessPosition opposingPiecePosition, ChessPiece opposingChessPiece, ChessPosition myKingPosition) {
+    public void getAttackers(ArrayList<ChessPosition> attackers, ChessPosition opposingPiecePosition,
+                             ChessPiece opposingChessPiece, ChessPosition myKingPosition) {
         Collection<ChessMove> opposingChessPieceMoves = opposingChessPiece.pieceMoves(board, opposingPiecePosition);
 
         for (ChessMove move : opposingChessPieceMoves) {

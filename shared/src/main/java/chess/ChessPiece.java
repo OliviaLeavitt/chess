@@ -97,7 +97,10 @@ public class ChessPiece {
         return null;
     }
 
-    public void addValidMovesForADirection(int currCol, int currRow, int colIncrement, int rowIncrement, ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves) {
+    public void addValidMovesForADirection(int currCol, int currRow,
+                                           int colIncrement, int rowIncrement,
+                                           ChessPosition myPosition,
+                                           ChessBoard board, Collection<ChessMove> validMoves) {
         currCol += colIncrement;
         currRow += rowIncrement;
         while (currCol > 0 && currCol < 9 && currRow > 0 && currRow < 9) {

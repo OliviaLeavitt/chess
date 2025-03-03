@@ -40,7 +40,9 @@ public class PawnMoves {
         return validMoves;
     }
 
-    public void getPawnAttackMoves(ChessPosition myPosition, int normalDirectionToMove, int promoteRow, ChessBoard board, ChessPiece piece, Collection<ChessMove> validMoves) {
+    public void getPawnAttackMoves(ChessPosition myPosition, int normalDirectionToMove,
+                                   int promoteRow, ChessBoard board, ChessPiece piece,
+                                   Collection<ChessMove> validMoves) {
         List<ChessPosition> diagonalMovePositions = List.of(
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col + 1),
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col - 1)
