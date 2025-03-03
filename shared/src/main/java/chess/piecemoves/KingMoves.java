@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import java.util.Collection;
 import java.util.List;
 
-import static chess.util.KingKnightMoveHelper.findValidKingKnightMoves;
+import static chess.piecemoves.KingKnightMoveHelper.findValidKingKnightMoves;
 
 
 public class KingMoves {

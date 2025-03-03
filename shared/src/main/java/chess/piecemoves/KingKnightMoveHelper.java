@@ -1,5 +1,4 @@
-// MoveUtils.java
-package chess.util;
+package chess.piecemoves;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -10,7 +9,9 @@ import java.util.List;
 
 public class KingKnightMoveHelper {
 
-    public static Collection<ChessMove> findValidKingKnightMoves(ChessPosition currentPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece, List<ChessPosition> potentialMoves) {
+    public static Collection<ChessMove> findValidKingKnightMoves(ChessPosition currentPosition, ChessBoard board,
+                                                                 Collection<ChessMove> validMoves, ChessPiece piece,
+                                                                 List<ChessPosition> potentialMoves) {
         for (ChessPosition potentialMove : potentialMoves) {
             if (potentialMove.getRow() >= 1 && potentialMove.getRow() <= 8) {
                 if (potentialMove.getColumn() >= 1 && potentialMove.getColumn() <= 8) {
