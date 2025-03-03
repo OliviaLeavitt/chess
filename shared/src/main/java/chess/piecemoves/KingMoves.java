@@ -8,6 +8,9 @@ import chess.ChessPosition;
 import java.util.Collection;
 import java.util.List;
 
+import static chess.util.KingKnightMoveHelper.findValidKingKnightMoves;
+
+
 public class KingMoves {
     public Collection<ChessMove> pieceMoves(ChessPosition myPosition, ChessBoard board, Collection<ChessMove> validMoves, ChessPiece piece) {
         List<ChessPosition> potentialMoves = List.of(
@@ -20,16 +23,6 @@ public class KingMoves {
                 new ChessPosition(myPosition.row - 1, myPosition.col + 1),
                 new ChessPosition(myPosition.row + 1, myPosition.col - 1)
         );
-        for (ChessPosition potentialMove : potentialMoves) {
-            if (potentialMove.getRow() >= 1 && potentialMove.getRow() <= 8) {
-                if (potentialMove.getColumn() >= 1 && potentialMove.getColumn() <= 8) {
-                    ChessPiece pieceOnPotentialMove = board.getPiece(potentialMove);
-                    if (pieceOnPotentialMove == null || pieceOnPotentialMove.getTeamColor() != piece.getTeamColor()) {
-                        validMoves.add(new ChessMove(myPosition, potentialMove, null));
-                    }
-                }
-            }
-        }
-        return validMoves;
+        return findValidKingKnightMoves(myPosition, board, validMoves, piece, potentialMoves);
     }
 }

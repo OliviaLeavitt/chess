@@ -139,23 +139,27 @@ public class ChessGame {
 
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            for (int row = 1; row <= 8; row++) {
-                for (int col = 1; col <= 8; col++) {
-                    ChessPosition position = new ChessPosition(row, col);
-                    ChessPiece piece = board.getPiece(position);
-                    if ((piece != null) && teamColor == piece.getTeamColor()) {
-                        if (!validMoves(position).isEmpty()) {
-                            return false;
-                        }
-                    }
-                }
-
-            }
-            return true;
+            return hasNoMovesLeft(teamColor);
 
         } else {
             return false;
         }
+    }
+
+    private boolean hasNoMovesLeft(TeamColor teamColor) {
+        for (int row = 1; row <= 8; row++) {
+            for (int col = 1; col <= 8; col++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(position);
+                if ((piece != null) && teamColor == piece.getTeamColor()) {
+                    if (!validMoves(position).isEmpty()) {
+                        return false;
+                    }
+                }
+            }
+
+        }
+        return true;
     }
 
 
@@ -203,19 +207,7 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-            for (int row = 1; row <= 8; row++) {
-                for (int col = 1; col <= 8; col++) {
-                    ChessPosition position = new ChessPosition(row, col);
-                    ChessPiece piece = board.getPiece(position);
-                    if ((piece != null) && teamColor == piece.getTeamColor()) {
-                        if (!validMoves(position).isEmpty()) {
-                            return false;
-                        }
-                    }
-                }
-
-            }
-            return true;
+            return hasNoMovesLeft(teamColor);
 
         } else {
             return false;
