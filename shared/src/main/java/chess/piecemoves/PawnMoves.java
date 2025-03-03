@@ -1,4 +1,4 @@
-package chess.pieceMoves;
+package chess.piecemoves;
 
 import chess.*;
 
@@ -41,11 +41,11 @@ public class PawnMoves {
     }
 
     public void getPawnAttackMoves(ChessPosition myPosition, int normalDirectionToMove, int promoteRow, ChessBoard board, ChessPiece piece, Collection<ChessMove> validMoves) {
-        List<ChessPosition> DiagonalMovePositions = List.of(
+        List<ChessPosition> diagonalMovePositions = List.of(
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col + 1),
                 new ChessPosition(myPosition.row + normalDirectionToMove, myPosition.col - 1)
         );
-        for (ChessPosition diagonalMovePosition : DiagonalMovePositions) {
+        for (ChessPosition diagonalMovePosition : diagonalMovePositions) {
             if (isInBounds(diagonalMovePosition)) {
                 ChessPiece pieceOnDiagonalMove = board.getPiece(diagonalMovePosition);
                 if (pieceOnDiagonalMove != null && pieceOnDiagonalMove.getTeamColor() != piece.getTeamColor()) {

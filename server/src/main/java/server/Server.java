@@ -44,7 +44,7 @@ public class Server {
             res.status(200);
             return "";
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch(Exception exception) {
             res.status(500);
@@ -61,7 +61,7 @@ public class Server {
             res.status(200);
             return new Gson().toJson(gameResult);
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch (Exception exception) {
             res.status(500);
@@ -77,7 +77,7 @@ public class Server {
             res.status(200);
             return new Gson().toJson(listResult);
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch (Exception exception) {
             res.status(500);
@@ -94,7 +94,7 @@ public class Server {
             res.status(200);
             return "";
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch (Exception exception) {
             res.status(500);
@@ -110,7 +110,7 @@ public class Server {
             res.status(200);
             return new Gson().toJson(loginResult);
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch (Exception exception) {
             res.status(500);
@@ -131,7 +131,7 @@ public class Server {
             res.status(200);
             return new Gson().toJson(registerResult);
         } catch (ResponseException exception) {
-            res.status(exception.StatusCode());
+            res.status(exception.statusCode());
             return exception.toJson();
         } catch (Exception exception) {
             res.status(500);
