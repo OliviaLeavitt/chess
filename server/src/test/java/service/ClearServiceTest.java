@@ -33,8 +33,4 @@ public class ClearServiceTest {
         assertNull(authDAO.getAuth("testAuthToken"));
         assertNull(gameDAO.getGame(1));
     }
-
-
-
-
 }

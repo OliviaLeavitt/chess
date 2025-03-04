@@ -50,7 +50,7 @@ public class CreateServiceTest {
             createService.createGame(invalidAuthToken, gameData);
             fail("Exception should have been thrown");
         } catch (ResponseException exception) {
-            assertEquals(401, exception.StatusCode());
+            assertEquals(401, exception.statusCode());
         }
     }
     @Test
@@ -63,7 +63,7 @@ public class CreateServiceTest {
             createService.createGame(authToken, null);
             fail("Exception should have been thrown");
         } catch (ResponseException exception) {
-            assertEquals(400, exception.StatusCode());
+            assertEquals(400, exception.statusCode());
         }
     }
 
