@@ -41,7 +41,7 @@ public class LoginServiceTest {
 
     @Test
     void loginUnauthorizedPassword() {
-        String username = "testUser";
+        String username = "testUsername";
         String password = "testPassword";
         User user = new User(username, password, "test@gmail.com");
         userDAO.createUser(user);

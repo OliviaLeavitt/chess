@@ -27,7 +27,7 @@ public class CreateServiceTest {
     @Test
     void createSuccessGame() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());
@@ -41,7 +41,7 @@ public class CreateServiceTest {
     @Test
     void createUnauthorizedGame() {
         String trueAuthToken = "trueAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(trueAuthToken, username));
 
         Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());
@@ -56,7 +56,7 @@ public class CreateServiceTest {
     @Test
     void createBadRequestGame() {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         try {

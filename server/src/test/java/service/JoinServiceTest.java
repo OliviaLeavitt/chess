@@ -27,7 +27,7 @@ public class JoinServiceTest {
     @Test
     void joinSuccessGame() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         Game gameData = new Game(1, null, "blackUsername", "TestGame", new chess.ChessGame());
@@ -57,7 +57,7 @@ public class JoinServiceTest {
     @Test
     void joinNoGameDataGame() {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
         try {
             joinService.joinGame(authToken, "WHITE", 1);
@@ -69,7 +69,7 @@ public class JoinServiceTest {
     @Test
     void joinNoPlayerColorGame() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         Game gameData = new Game(1, null, "blackUsername", "TestGame", new chess.ChessGame());
@@ -86,7 +86,7 @@ public class JoinServiceTest {
     @Test
     void joinAlreadyTakenGame() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());

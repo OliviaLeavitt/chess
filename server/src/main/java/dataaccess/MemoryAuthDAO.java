@@ -24,5 +24,6 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     public void createUser(User user) {
+
     }
 }

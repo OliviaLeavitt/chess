@@ -30,7 +30,7 @@ public class ListServiceTest {
     @Test
     void listSuccessGames() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());
@@ -48,7 +48,7 @@ public class ListServiceTest {
         assertEquals(3, games.size());
     }
     @Test
-    void listUnauthorizedGames() throws ResponseException {
+    void listUnauthorizedGames() {
         try {
             listService.listGames("invalidAuthToken");
             fail("Exception should have been thrown");
@@ -59,7 +59,7 @@ public class ListServiceTest {
     @Test
     void listEmptyGames() throws ResponseException {
         String authToken = "testAuthToken";
-        String username = "testUser";
+        String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
         ListResult listResult = listService.listGames(authToken);
