@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.Auth;
+import model.User;
 
 import java.util.HashMap;
 
@@ -20,5 +21,8 @@ public class MemoryAuthDAO implements AuthDAO {
     }
     public void deleteAuth(String authToken) {
         authTokens.remove(authToken);
+    }
+
+    public void createUser(User user) {
     }
 }
