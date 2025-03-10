@@ -1,5 +1,7 @@
 package dataaccess;
 
+import exception.ResponseException;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -45,6 +47,48 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
+        }
+    }
+    private static final String[] createStatements = {
+            """
+            CREATE TABLE IF NOT EXISTS games (
+            `gameID` VARCHAR(255) UNIQUE NOT NULL,
+            `gameName` VARCHAR(255) NOT NULL,
+            `whiteUsername` VARCHAR(255) DEFAULT NULL,
+            `blackUsername` VARCHAR(255) DEFAULT NULL,
+            `gameJson` TEXT NOT NULL,
+            PRIMARY KEY(gameID)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS users (
+            `username` VARCHAR(255) UNIQUE NOT NULL,
+            `password` VARCHAR(255) NOT NULL,
+            `email` VARCHAR(255) NOT NULL,
+            PRIMARY KEY(username)
+            )
+            """
+    };
+
+//    ,
+//    CREATE TABLE IF NOT EXISTS users (
+//            `username` VARCHAR(255) UNIQUE NOT NULL,
+//            `password` VARCHAR(255) NOT NULL,
+//            `email` VARCHAR(255) NOT NULL,
+//    PRIMARY KEY(username)
+//            )
+//
+
+    public static void configureDatabase() throws ResponseException, DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()) {
+            for (var statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        } catch (SQLException | DataAccessException ex) {
+            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 

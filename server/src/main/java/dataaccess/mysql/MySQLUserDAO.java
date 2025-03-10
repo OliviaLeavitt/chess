@@ -15,6 +15,7 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 public class MySQLUserDAO implements UserDAO {
+
     @Override
     public void clear() throws ResponseException {
         var statement = "TRUNCATE users";
@@ -25,7 +26,7 @@ public class MySQLUserDAO implements UserDAO {
     public User createUser(User user) throws ResponseException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-        executeUpdate(statement, user.username(), hashedPassword, user.email(), json);
+        executeUpdate(statement, user.username(), user.password(), user.email());
         return new User(user.username(), user.password(), user.email());
     }
 
@@ -54,15 +55,6 @@ public class MySQLUserDAO implements UserDAO {
         return new User(username, password, email);
     }
 
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS users (
-            `username` VARCHAR(255) UNIQUE NOT NULL PRIMARY KEY,
-            `password` VARCHAR(255) NOT NULL,
-            `email` VARCHAR(255) NOT NULL
-            )
-            """
-    };
     private int executeUpdate(String statement, Object... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
@@ -87,16 +79,4 @@ public class MySQLUserDAO implements UserDAO {
         }
     }
 
-    private void configureDatabase() throws ResponseException, DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException | DataAccessException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-    }
 }
