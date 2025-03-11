@@ -2,6 +2,8 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import dataaccess.mysql.MySQLGameDAO;
+import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Game;
 import model.User;
@@ -12,9 +14,9 @@ import service.results.*;
 import spark.*;
 
 public class Server {
-    private final UserDAO userDAO = new MemoryUserDAO();
+    private final UserDAO userDAO = new MySQLUserDAO();
     private final AuthDAO authDAO = new MemoryAuthDAO();
-    private final GameDAO gameDAO = new MemoryGameDAO();
+    private final GameDAO gameDAO = new MySQLGameDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);

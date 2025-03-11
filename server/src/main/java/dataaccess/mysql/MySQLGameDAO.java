@@ -26,16 +26,16 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public Game createGame(Game game) throws ResponseException {
-        String statement = "INSERT INTO games (gameName, whiteUsername, blackUsername, gameData) VALUES (?, ?, ?, ?)";
-        String json = new Gson().toJson(game.game());
-        int gameID = executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), json);
+        String statement = "INSERT INTO games (gameName, whiteUsername, blackUsername, gameJson) VALUES (?, ?, ?, ?)";
+        String gameJson = new Gson().toJson(game.game());
+        int gameID = executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson);
         return getGame(gameID);
     }
 
     @Override
     public Game getGame(int gameID) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameName, whiteUsername, blackUsername, gameData FROM games WHERE gameID=?";
+            var statement = "SELECT * FROM games WHERE gameID=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
@@ -52,19 +52,19 @@ public class MySQLGameDAO implements GameDAO {
 
     private Game readGame(ResultSet rs) throws SQLException {
         int gameID = rs.getInt("gameID");
-        String gameName = rs.getString("gameName");
         String whiteUsername = rs.getString("whiteUsername");
         String blackUsername = rs.getString("blackUsername");
-        String gameJson = rs.getString("json");
+        String gameName = rs.getString("gameName");
+        String gameJson = rs.getString("gameJson");
         var game = new Gson().fromJson(gameJson, ChessGame.class);
-        return new Game(gameID, gameName, whiteUsername, blackUsername, game);
+        return new Game(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
     @Override
     public Collection<Game> listGames() throws ResponseException {
         var result = new ArrayList<Game>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameID, json FROM games";
+            var statement = "SELECT * FROM games";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -80,18 +80,21 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void updateGame(Game game) throws ResponseException {
-        String statement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameData = ? WHERE gameID = ?";
-        String json = new Gson().toJson(game.game());
-        executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), json, game.gameID());
+        String statement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameJson = ? WHERE gameID = ?";
+        String gameJson = new Gson().toJson(game.game());
+        executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson, game.gameID());
     }
     private int executeUpdate(String statement, Object... params) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (var i = 0; i < params.length; i++) {
                     var param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else {
-                        if (param == null) ps.setNull(i + 1, NULL);
+                    switch (param) {
+                        case String p -> ps.setString(i + 1, p);
+                        case Integer p -> ps.setInt(i + 1, p);
+                        case null -> ps.setNull(i + 1, NULL);
+                        default -> {
+                        }
                     }
                 }
                 ps.executeUpdate();

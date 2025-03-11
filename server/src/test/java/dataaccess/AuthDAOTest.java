@@ -1,5 +1,6 @@
 package dataaccess;
 
+import dataaccess.mysql.MySQLAuthDAO;
 import exception.ResponseException;
 import model.Auth;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,7 @@ public class AuthDAOTest {
 
     @BeforeEach
     void setUp() throws ResponseException {
-        authDAO = new MemoryAuthDAO();
+        authDAO = new MySQLAuthDAO();
         authDAO.clear();
     }
 

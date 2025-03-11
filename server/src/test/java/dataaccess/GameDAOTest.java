@@ -1,6 +1,7 @@
 package dataaccess;
 
 import chess.ChessGame;
+import dataaccess.mysql.MySQLGameDAO;
 import exception.ResponseException;
 import model.Game;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,7 @@ public class GameDAOTest {
 
     @BeforeEach
     void setUp() throws ResponseException {
-        gameDAO = new MemoryGameDAO();
+        gameDAO = new MySQLGameDAO();
         gameDAO.clear();
     }
 

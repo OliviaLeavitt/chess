@@ -26,14 +26,14 @@ public class MySQLUserDAO implements UserDAO {
     public User createUser(User user) throws ResponseException {
         var statement = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-        executeUpdate(statement, user.username(), user.password(), user.email());
+        executeUpdate(statement, user.username(), hashedPassword, user.email());
         return new User(user.username(), user.password(), user.email());
     }
 
     @Override
     public User getUser(String username) throws ResponseException {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, password, email FROM users WHERE username=?";
+            var statement = "SELECT * FROM users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {

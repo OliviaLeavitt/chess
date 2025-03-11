@@ -7,7 +7,8 @@ import model.Auth;
 public class MySQLAuthDAO implements AuthDAO {
     @Override
     public void clear() throws ResponseException {
-
+        var statement = "TRUNCATE games";
+        executeUpdate(statement);
     }
 
     @Override
