@@ -70,15 +70,6 @@ public class DatabaseManager {
             """
     };
 
-//    ,
-//    CREATE TABLE IF NOT EXISTS users (
-//            `username` VARCHAR(255) UNIQUE NOT NULL,
-//            `password` VARCHAR(255) NOT NULL,
-//            `email` VARCHAR(255) NOT NULL,
-//    PRIMARY KEY(username)
-//            )
-//
-
     public static void configureDatabase() throws ResponseException, DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
