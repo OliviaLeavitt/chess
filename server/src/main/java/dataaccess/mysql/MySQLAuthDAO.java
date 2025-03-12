@@ -75,7 +75,9 @@ public class MySQLAuthDAO implements AuthDAO {
             if (param instanceof String p) {
                 ps.setString(i + 1, p);
             } else {
-                if (param == null) ps.setNull(i + 1, NULL);
+                if (param == null) {
+                    ps.setNull(i + 1, NULL);
+                }
             }
         }
     }
