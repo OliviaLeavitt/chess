@@ -13,7 +13,6 @@ public class LogoutService {
 
     public void logout(String authToken) throws ResponseException {
         Auth authData = authDataAccess.getAuth(authToken);
-
         if (authData == null) {
             throw new ResponseException(401, "Error: unauthorized");
         }

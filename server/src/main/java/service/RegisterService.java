@@ -22,7 +22,6 @@ public class RegisterService {
     public RegisterResult register(User user) throws ResponseException {
         System.out.println(userDataAccess.toString());
         System.out.println(user);
-
         if (user.username() == null || user.password() == null || user.email() == null) {
             throw new ResponseException(400, "Error: bad request");
         }

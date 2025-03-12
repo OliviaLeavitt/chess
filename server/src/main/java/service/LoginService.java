@@ -21,18 +21,14 @@ public class LoginService {
     }
 
     public LoginResult login(LoginRequest loginRequest) throws ResponseException {
-
         User userData = userDataAccess.getUser(loginRequest.username());
-
         if (userData == null || !BCrypt.checkpw(loginRequest.password(), userData.password())) {
             throw new ResponseException(401, "Error: unauthorized");
         }
 
-
         String authToken = UUID.randomUUID().toString();
         Auth authData = new Auth(authToken, loginRequest.username());
         authDataAccess.createAuth(authData);
-
 
         return new LoginResult(loginRequest.username(), authToken);
     }
