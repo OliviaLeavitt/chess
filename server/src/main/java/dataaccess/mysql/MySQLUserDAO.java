@@ -54,6 +54,4 @@ public class MySQLUserDAO extends MySQLParentDAO implements UserDAO {
         String email = rs.getString("email");
         return new User(username, password, email);
     }
-
-
 }
