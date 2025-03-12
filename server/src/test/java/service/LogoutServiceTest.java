@@ -3,6 +3,9 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
+import dataaccess.mysql.MySQLAuthDAO;
+import dataaccess.mysql.MySQLGameDAO;
+import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Auth;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LogoutServiceTest {
-    private final MemoryUserDAO userDAO = new MemoryUserDAO();
-    private final MemoryAuthDAO authDAO = new MemoryAuthDAO();
-    private final MemoryGameDAO gameDAO = new MemoryGameDAO();
+    private final MySQLUserDAO userDAO = new MySQLUserDAO();
+    private final MySQLAuthDAO authDAO = new MySQLAuthDAO();
+    private final MySQLGameDAO gameDAO = new MySQLGameDAO();
     private final ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
     private final LogoutService logoutService = new LogoutService(authDAO);
 

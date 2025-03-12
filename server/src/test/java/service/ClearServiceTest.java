@@ -1,6 +1,9 @@
 package service;
 
 import dataaccess.*;
+import dataaccess.mysql.MySQLAuthDAO;
+import dataaccess.mysql.MySQLGameDAO;
+import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.User;
@@ -11,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ClearServiceTest {
 
-    private final MemoryUserDAO userDAO = new MemoryUserDAO();
-    private final MemoryAuthDAO authDAO = new MemoryAuthDAO();
-    private final MemoryGameDAO gameDAO = new MemoryGameDAO();
+    private final MySQLUserDAO userDAO = new MySQLUserDAO();
+    private final MySQLAuthDAO authDAO = new MySQLAuthDAO();
+    private final MySQLGameDAO gameDAO = new MySQLGameDAO();
     private final ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
     @BeforeEach

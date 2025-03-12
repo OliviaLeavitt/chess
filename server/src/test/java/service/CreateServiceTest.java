@@ -3,6 +3,9 @@ package service;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
+import dataaccess.mysql.MySQLAuthDAO;
+import dataaccess.mysql.MySQLGameDAO;
+import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.Game;
@@ -13,9 +16,9 @@ import service.results.CreateResult;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CreateServiceTest {
-    private final MemoryUserDAO userDAO = new MemoryUserDAO();
-    private final MemoryAuthDAO authDAO = new MemoryAuthDAO();
-    private final MemoryGameDAO gameDAO = new MemoryGameDAO();
+    private final MySQLUserDAO userDAO = new MySQLUserDAO();
+    private final MySQLAuthDAO authDAO = new MySQLAuthDAO();
+    private final MySQLGameDAO gameDAO = new MySQLGameDAO();
     private final CreateService createService = new CreateService(authDAO, gameDAO);
     private final ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
 
@@ -39,7 +42,7 @@ public class CreateServiceTest {
         assertEquals("TestGame", createdGame.gameName());
     }
     @Test
-    void createUnauthorizedGame() {
+    void createUnauthorizedGame() throws ResponseException {
         String trueAuthToken = "trueAuthToken";
         String username = "testUsername";
         authDAO.createAuth(new Auth(trueAuthToken, username));
@@ -54,7 +57,7 @@ public class CreateServiceTest {
         }
     }
     @Test
-    void createBadRequestGame() {
+    void createBadRequestGame() throws ResponseException {
         String authToken = "testAuthToken";
         String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
