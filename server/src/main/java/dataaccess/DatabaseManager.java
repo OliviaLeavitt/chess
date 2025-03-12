@@ -49,7 +49,7 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
-    private static final String[] createStatements = {
+    private static final String[] CREATE_STATEMENTS = {
             """
             CREATE TABLE IF NOT EXISTS games (
             `gameID` INT AUTO_INCREMENT UNIQUE NOT NULL,
@@ -80,7 +80,7 @@ public class DatabaseManager {
     public static void configureDatabase() throws ResponseException, DataAccessException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
+            for (var statement : CREATE_STATEMENTS) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
