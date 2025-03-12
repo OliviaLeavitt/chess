@@ -15,9 +15,9 @@ import service.results.*;
 import spark.*;
 
 public class Server {
-    private final UserDAO userDAO = new MySQLUserDAO();
-    private final AuthDAO authDAO = new MySQLAuthDAO();
-    private final GameDAO gameDAO = new MySQLGameDAO();
+    private final UserDAO userDAO = new MemoryUserDAO();
+    private final AuthDAO authDAO = new MemoryAuthDAO();
+    private final GameDAO gameDAO = new MemoryGameDAO();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
