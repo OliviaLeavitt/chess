@@ -71,10 +71,10 @@ public class DatabaseManager {
             """
             CREATE TABLE IF NOT EXISTS auth (
             `authToken` VARCHAR(255) UNIQUE NOT NULL,
-            `username` VARCHAR(255) UNIQUE NOT NULL,
+            `username` VARCHAR(255) NOT NULL,
             PRIMARY KEY (`authToken`)
             )
-            """
+            """,
     };
 
     public static void configureDatabase() throws ResponseException, DataAccessException {
