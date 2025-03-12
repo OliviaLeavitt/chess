@@ -27,6 +27,17 @@ public class AuthDAOTest {
         assertEquals("testUsername", newAuth.username());
 
     }
+    @Test
+    void createInvalidAuth() {
+        Auth invalidAuth = new Auth("invalidToken", null);
+
+        try {
+            authDAO.createAuth(invalidAuth);
+            fail("Should have failed for invalid username");
+        } catch (ResponseException e) {
+            System.out.println("Can't create game with bad auth data");
+        }
+    }
 
     @Test
     void getValidAuth() throws ResponseException {

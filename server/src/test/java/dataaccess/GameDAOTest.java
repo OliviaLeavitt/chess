@@ -109,6 +109,20 @@ public class GameDAOTest {
         assertEquals(updatedGame, gameDAO.getGame(createdGame.gameID()));
     }
 
+    @Test
+    void createInvalidGame() {
+        Game invalidGame = new Game(0, null, null, null, new ChessGame());
+
+        try {
+            gameDAO.createGame(invalidGame);
+            fail("Should have failed because cannot create game with bad data");
+        } catch (ResponseException e) {
+            System.out.println("Can't create game with bad data");
+        }
+    }
+
+
+
 
 
 }

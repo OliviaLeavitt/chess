@@ -41,6 +41,20 @@ public class UserDAOTest {
     }
 
     @Test
+    void createDuplicateUser() throws ResponseException {
+        User user = new User("duplicateUser", "password123", "email@example.com");
+        userDAO.createUser(user);
+
+        try {
+            userDAO.createUser(user);
+            fail("Should have failed for duplicate user");
+        } catch (ResponseException e) {
+            System.out.println("Can't create duplicate user");
+        }
+    }
+
+
+    @Test
     void getNullUser() throws ResponseException {
         User retrievedUser = userDAO.getUser("userThatDoesNotExist");
         assertNull(retrievedUser);
