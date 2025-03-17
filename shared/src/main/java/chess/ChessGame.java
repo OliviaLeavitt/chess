@@ -79,16 +79,13 @@ public class ChessGame {
             ChessPosition endPosition = move.getEndPosition();
             ChessPiece endPiece = board.getPiece(endPosition);
 
-
-            //temp move
-            board.addPiece(endPosition, piece);
-            board.addPiece(startPosition, null);
+            //make move
+            makeOrUndoTempMove(startPosition, endPosition, piece, null);
 
             boolean inCheck = isInCheck(teamColor);
 
             //undo temp move
-            board.addPiece(startPosition, piece);
-            board.addPiece(endPosition, endPiece);
+            makeOrUndoTempMove(endPosition, startPosition, piece, endPiece);
 
             if (!inCheck) {
                 validMoves.add(move);
@@ -96,6 +93,11 @@ public class ChessGame {
 
         }
         return validMoves;
+    }
+
+    void makeOrUndoTempMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece piece, ChessPiece endPiece) {
+        board.addPiece(endPosition, piece);
+        board.addPiece(startPosition, endPiece);
     }
 
 
