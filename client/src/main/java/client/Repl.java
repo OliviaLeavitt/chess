@@ -1,14 +1,14 @@
+package client;
 
-import javax.management.Notification;
 import java.util.Scanner;
+import ui.EscapeSequences;
 
-import static java.awt.Color.*;
 
 public class Repl {
     private final client.ChessClient client;
 
     public Repl(String serverUrl) {
-        client = new client.ChessClient(serverUrl, this);
+        client = new client.ChessClient(serverUrl);
     }
 
     public void run() {
@@ -23,17 +23,18 @@ public class Repl {
 
             try {
                 result = client.eval(line);
-                System.out.print(BLUE + result);
+                System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE + result + EscapeSequences.RESET_TEXT_COLOR);
             } catch (Throwable e) {
                 var msg = e.toString();
-                System.out.print(msg);
+                System.out.print(EscapeSequences.SET_TEXT_COLOR_BLUE + msg + EscapeSequences.RESET_TEXT_COLOR);
             }
         }
         System.out.println();
     }
 
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print("\n" + EscapeSequences.RESET_TEXT_COLOR + ">>> " + EscapeSequences.SET_TEXT_COLOR_GREEN);
+
     }
 
 }
