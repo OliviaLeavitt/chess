@@ -9,6 +9,7 @@ import model.Game;
 import model.User;
 import results.CreateResult;
 import server.ServerFacade;
+import ui.DrawChessBoard;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -124,6 +125,8 @@ public class ChessClient {
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
             server.joinGame(authToken, null, gameId);
+            game = server.joinGame(authToken, null, gameId);
+            DrawChessBoard.drawChessboard(game, null);
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -137,7 +140,8 @@ public class ChessClient {
             if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
                 throw new ResponseException(400, "Color must be white or black");
             }
-            server.joinGame(authToken, playerColor, gameId);
+            game = server.joinGame(authToken, playerColor, gameId);
+            DrawChessBoard.drawChessboard(game, playerColor);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
         throw new ResponseException(400, "Expected: <WHITE|BLACK> <gameID>");
