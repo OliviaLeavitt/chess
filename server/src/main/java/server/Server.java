@@ -13,8 +13,8 @@ import results.ListResult;
 import results.LoginResult;
 import results.RegisterResult;
 import service.*;
-import service.requests.LoginRequest;
-import service.requests.JoinRequest;
+import requests.LoginRequest;
+import requests.JoinRequest;
 import spark.*;
 
 public class Server {

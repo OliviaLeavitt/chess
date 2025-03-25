@@ -7,7 +7,7 @@ import exception.ResponseException;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.requests.LoginRequest;
+import requests.LoginRequest;
 import results.LoginResult;
 
 import static org.junit.jupiter.api.Assertions.*;
