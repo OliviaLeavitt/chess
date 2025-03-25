@@ -1,5 +1,7 @@
 package client;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import chess.ChessGame;
@@ -8,13 +10,16 @@ import exception.ResponseException;
 import model.Game;
 import model.User;
 import results.CreateResult;
+import results.LoginResult;
 import server.ServerFacade;
 import ui.DrawChessBoard;
+
 
 public class ChessClient {
     private final ServerFacade server;
     private String authToken = null;
     private final String serverUrl;
+    private ChessGame currentGame;
     private State state = State.PRELOGIN;
 
     public ChessClient(String serverUrl) {
@@ -49,6 +54,8 @@ public class ChessClient {
             }
         } catch (ResponseException ex) {
             return ex.getMessage();
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -58,7 +65,9 @@ public class ChessClient {
             var password = params[1];
             var email = params[2];
             User user = new User(username, password, email);
-            server.register(user);
+            var auth = server.register(user);
+            authToken = auth.authToken();
+            server.setAuthToken(authToken);
             state = State.POSTLOGIN;
             return String.format("Registered and logged in as %s.", user.username());
         }
@@ -69,7 +78,9 @@ public class ChessClient {
         if (params.length == 2) {
             var username = params[0];
             var password = params[1];
-            server.login(username, password);
+            LoginResult result = server.login(username, password);
+            authToken = result.authToken();
+            server.setAuthToken(authToken);
             state = State.POSTLOGIN;
             return String.format("You logged in as %s.", username);
         }
@@ -82,13 +93,11 @@ public class ChessClient {
         return "You logged out.";
     }
 
-    public String createGame(String... params) throws ResponseException {
+    public String createGame(String... params) throws ResponseException, IOException, URISyntaxException {
         assertSignedIn();
-        if (params.length == 2) {
-            var authToken = params[0];
-            var gameName = params[1];
-            Game newGame = new Game(0, null, null, gameName, new ChessGame());
-            CreateResult result = server.createGame(authToken, newGame);
+        if (params.length == 1) {
+            var gameName = params[0];
+            CreateResult result = server.createGame(gameName);
             return String.format("Created game: %s (with game id: %d)", gameName, result.gameID());
         }
         throw new ResponseException(400, "Expected: <gameName>");
@@ -108,13 +117,12 @@ public class ChessClient {
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 3) {
-            var authToken = params[0];
-            var playerColor = params[1].toUpperCase();
-            var gameId = Integer.parseInt(params[2]);
+            var playerColor = params[0].toUpperCase();
+            var gameId = Integer.parseInt(params[1]);
             if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
                 throw new ResponseException(400, "Color must be white or black");
             }
-            server.joinGame(authToken, playerColor, gameId);
+            server.joinGame(playerColor, gameId);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
         throw new ResponseException(400, "Expected: <gameID> <WHITE|BLACK>");
@@ -124,9 +132,9 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
-            server.joinGame(authToken, null, gameId);
-            game = server.joinGame(authToken, null, gameId);
-            DrawChessBoard.drawChessboard(game, null);
+            Game joinedGame = server.joinGame(null, gameId);
+            currentGame = joinedGame.game();
+            DrawChessBoard.drawChessboard(currentGame, null);
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -140,8 +148,9 @@ public class ChessClient {
             if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
                 throw new ResponseException(400, "Color must be white or black");
             }
-            game = server.joinGame(authToken, playerColor, gameId);
-            DrawChessBoard.drawChessboard(game, playerColor);
+            Game joinedGame = server.joinGame(playerColor, gameId);
+            currentGame = joinedGame.game();
+            DrawChessBoard.drawChessboard(currentGame, playerColor);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
         throw new ResponseException(400, "Expected: <WHITE|BLACK> <gameID>");
