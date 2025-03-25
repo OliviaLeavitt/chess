@@ -1,4 +1,4 @@
-package service.results;
+package results;
 
 import model.Game;
 import java.util.Collection;

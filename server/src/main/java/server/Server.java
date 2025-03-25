@@ -8,10 +8,13 @@ import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Game;
 import model.User;
+import results.CreateResult;
+import results.ListResult;
+import results.LoginResult;
+import results.RegisterResult;
 import service.*;
 import service.requests.LoginRequest;
 import service.requests.JoinRequest;
-import service.results.*;
 import spark.*;
 
 public class Server {

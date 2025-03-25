@@ -6,8 +6,10 @@ import model.User;
 
 import java.net.HttpURLConnection;
 import com.google.gson.Gson;
-import exception.ErrorResponse;
 import exception.ResponseException;
+import requests.CreateRequest;
+import results.CreateResult;
+import results.LoginResult;
 
 import java.io.*;
 import java.net.*;
@@ -39,7 +41,7 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, authToken, null);
     }
 
-    public CreateResult createGame(String authToken, String gameName) throws ResponseException {
+    public CreateResult createGame(String authToken, Game gameName) throws ResponseException {
         var path = "/game";
         var request = new CreateRequest(authToken, gameName);
         return this.makeRequest("POST", path, request, CreateResult.class);

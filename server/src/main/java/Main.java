@@ -1,7 +1,4 @@
 import chess.*;
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseManager;
-import exception.ResponseException;
 import server.Server;
 
 

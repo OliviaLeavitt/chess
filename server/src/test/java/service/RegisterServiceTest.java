@@ -1,8 +1,5 @@
 package service;
 
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
 import dataaccess.mysql.MySQLAuthDAO;
 import dataaccess.mysql.MySQLGameDAO;
 import dataaccess.mysql.MySQLUserDAO;
@@ -10,7 +7,7 @@ import exception.ResponseException;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.results.RegisterResult;
+import results.RegisterResult;
 
 import static org.junit.jupiter.api.Assertions.*;
 

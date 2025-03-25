@@ -5,7 +5,7 @@ import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.Game;
-import service.results.CreateResult;
+import results.CreateResult;
 
 public class CreateService {
     private final AuthDAO authDataAccess;
