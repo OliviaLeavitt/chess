@@ -5,7 +5,7 @@ import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.Auth;
 import model.Game;
-import service.results.ListResult;
+import results.ListResult;
 
 import java.util.Collection;
 

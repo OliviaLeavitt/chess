@@ -1,18 +1,13 @@
 package dataaccess.mysql;
 
-import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.User;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class MySQLUserDAO extends MySQLParentDAO implements UserDAO {
 

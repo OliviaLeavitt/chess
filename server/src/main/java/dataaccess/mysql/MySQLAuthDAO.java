@@ -1,18 +1,12 @@
 package dataaccess.mysql;
 
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
-import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.Auth;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
 
 public class MySQLAuthDAO extends MySQLParentDAO implements AuthDAO {
     @Override

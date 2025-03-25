@@ -1,6 +1,5 @@
 package service;
 
-import dataaccess.*;
 import dataaccess.mysql.MySQLAuthDAO;
 import dataaccess.mysql.MySQLGameDAO;
 import dataaccess.mysql.MySQLUserDAO;

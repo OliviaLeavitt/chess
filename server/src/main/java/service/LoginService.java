@@ -6,8 +6,8 @@ import exception.ResponseException;
 import model.Auth;
 import model.User;
 import org.mindrot.jbcrypt.BCrypt;
-import service.requests.LoginRequest;
-import service.results.LoginResult;
+import requests.LoginRequest;
+import results.LoginResult;
 
 import java.util.UUID;
 
