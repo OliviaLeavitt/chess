@@ -4,12 +4,17 @@ import dataaccess.mysql.MySQLAuthDAO;
 import dataaccess.mysql.MySQLGameDAO;
 import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
+import model.Auth;
 import model.User;
 import org.junit.jupiter.api.*;
+import results.CreateResult;
 import results.LoginResult;
 import server.Server;
 import server.ServerFacade;
 import service.ClearService;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -103,5 +108,96 @@ public class ServerFacadeTests {
             fail("Should not have thrown an exception: " + e.getMessage());
         }
     }
+
+    @Test
+    void logoutFailInvalidAuth() {
+        try {
+            facade.logout("invalidAuthToken");
+            fail("Should have failed for invalid auth token");
+        } catch (ResponseException e) {
+            System.out.println("Should have failed invalid auth");
+        }
+    }
+
+    @Test
+    void createGameSuccess() {
+        User testUser = new User("gameUser", "testPassword", "game@gmail.com");
+        String gameName = "TestGame";
+        try {
+            var auth = facade.register(testUser);
+            facade.setAuthToken(auth.authToken());
+            CreateResult createResult = facade.createGame(gameName);
+            assertTrue(createResult.gameID() > 0, "Game ID should be greater than 0");
+        } catch (ResponseException e) {
+            fail("Test failed: " + e.getMessage());
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Test
+    void createGameFailInvalidAuth() {
+        String gameName = "TestGame";
+        try {
+            facade.createGame(gameName);
+            fail("Should have failed for invalid auth token");
+        } catch (ResponseException e) {
+            System.out.println("Should have failed invalid auth");
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void joinGameSuccess() {
+        User testUser = new User("joinUser", "testPassword", "test@gmail.com");
+        try {
+            var auth = facade.register(testUser);
+            facade.setAuthToken(auth.authToken());
+
+            String gameName = "TestGame";
+            CreateResult createResult = facade.createGame(gameName);
+            facade.joinGame("WHITE", createResult.gameID());
+        } catch (ResponseException e) {
+            fail("Join Game Failed: " + e.getMessage());
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void joinGameFailInvalidAuth() {
+        try {
+            facade.joinGame("WHITE", 123);
+            fail("Should have failed for invalid auth token");
+        } catch (ResponseException e) {
+            System.out.println("Should have failed invalid auth");
+        }
+    }
+
+    @Test
+    void listGamesSuccess() {
+        User testUser = new User("listUser", "testPassword", "list@gmail.com");
+        try {
+            var auth = facade.register(testUser);
+            facade.setAuthToken(auth.authToken());
+            var games = facade.listGames(auth.authToken());
+            assertNotNull(games);
+        } catch (ResponseException e) {
+            fail("List game failed");
+        }
+    }
+
+    @Test
+    void listGamesFailInvalidAuth() {
+        try {
+            facade.listGames("invalidAuthToken");
+            fail("Should have failed for invalid auth token");
+        } catch (ResponseException e) {
+            System.out.println("Should have failed invalid auth");
+        }
+    }
+
+
+
 
 }
