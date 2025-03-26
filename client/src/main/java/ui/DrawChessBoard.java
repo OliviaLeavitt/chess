@@ -52,20 +52,24 @@ public class DrawChessBoard {
         drawHeaders(out, isBlackPerspective);
     }
     private static void drawRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
-        int displayRow = isBlackPerspective ? row + 1 : BOARD_SIZE_IN_SQUARES - row;
-        out.print(displayRow);
+        int sideHeaders = isBlackPerspective ? row + 1 : BOARD_SIZE_IN_SQUARES - row;
+        out.print(sideHeaders);
         out.print(" ");
 
+        colorRow(out, board, row, isBlackPerspective);
+
+        out.print(RESET_BG_COLOR);
+        out.print(" ");
+        out.print(sideHeaders);
+        System.out.println();
+    }
+
+    private static void colorRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
         for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
             out.print(SET_TEXT_COLOR_WHITE);
             drawSquare(out, board, row, col, isBlackPerspective);
             out.print(SET_TEXT_COLOR_WHITE);
         }
-
-        out.print(RESET_BG_COLOR);
-        out.print(" ");
-        out.print(displayRow);
-        System.out.println();
     }
 
     private static void drawSquare(PrintStream out, ChessBoard board, int row, int col, boolean isBlackPerspective) {
