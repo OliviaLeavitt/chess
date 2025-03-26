@@ -31,11 +31,14 @@ public class DrawChessBoard {
     }
 
     private static void drawHeaders(PrintStream out, boolean isBlackPerspective) {
+        out.print(SET_TEXT_COLOR_WHITE);
         out.print("  ");
-        String[] headers = {"a", "b", "c", "d", "e", "f", "g", "h"};
-        if (isBlackPerspective) {
-            headers = new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
-        }
+        String[] headers = new String[0];
+        String[] whiteHeaders = {"a", "b", "c", "d", "e", "f", "g", "h"};
+        String[] blackHeaders = {"h", "g", "f", "e", "d", "c", "b", "a"};
+
+        headers = isBlackPerspective ? blackHeaders : whiteHeaders;;
+
         for (String header : headers) {
             out.print(" " + header + "  ");
         }
@@ -50,15 +53,23 @@ public class DrawChessBoard {
     }
     private static void drawRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
         int displayRow = isBlackPerspective ? row + 1 : BOARD_SIZE_IN_SQUARES - row;
-        out.print(displayRow + " ");
+        out.print(displayRow);
+        out.print(" ");
 
         for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
+            out.print(SET_TEXT_COLOR_WHITE);
             drawSquare(out, board, row, col, isBlackPerspective);
+            out.print(SET_TEXT_COLOR_WHITE);
         }
-        out.println(RESET_BG_COLOR + " " + displayRow);
+
+        out.print(RESET_BG_COLOR);
+        out.print(" ");
+        out.print(displayRow);
+        System.out.println();
     }
 
     private static void drawSquare(PrintStream out, ChessBoard board, int row, int col, boolean isBlackPerspective) {
+        out.print(SET_TEXT_COLOR_BLACK);
         int actualCol = isBlackPerspective ? BOARD_SIZE_IN_SQUARES - col - 1 : col;
         int actualRow = isBlackPerspective ? row : BOARD_SIZE_IN_SQUARES - row - 1;
 
@@ -72,7 +83,7 @@ public class DrawChessBoard {
 
     private static void setSquareColor(PrintStream out, int row, int col) {
         boolean isDarkSquare = (row + col) % 2 == 1;
-        out.print(isDarkSquare ? SET_BG_COLOR_BLACK : SET_BG_COLOR_WHITE);
+        out.print(isDarkSquare ? SET_BG_COLOR_MAGENTA : SET_BG_COLOR_WHITE);
     }
 
     private static void drawPieceOrEmpty(PrintStream out, ChessPiece piece) {

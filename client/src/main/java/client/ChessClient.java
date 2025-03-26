@@ -5,9 +5,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import exception.ResponseException;
-import model.Game;
 import model.User;
 import results.CreateResult;
 import results.LoginResult;
