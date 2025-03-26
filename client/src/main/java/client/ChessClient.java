@@ -23,8 +23,8 @@ public class ChessClient {
     private State state = State.PRELOGIN;
 
     public ChessClient(String serverUrl) {
-        server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        server = new ServerFacade(serverUrl);
     }
 
     public String eval(String input) {
@@ -109,9 +109,8 @@ public class ChessClient {
         assertSignedIn();
         var games = server.listGames(authToken);
         var result = new StringBuilder();
-        var gson = new Gson();
         for (var game : games) {
-            result.append(gson.toJson(game)).append('\n');
+            result.append("Game Name: ").append(game.gameName()).append(", Game ID: ").append(game.gameID()).append('\n');
         }
         return result.toString();
     }
@@ -147,7 +146,7 @@ public class ChessClient {
             var gameId = Integer.parseInt(params[1]);
 
             if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
-                throw new ResponseException(400, "Error: Color must be WHITE or BLACK");
+                throw new ResponseException(400, "Error: Must be white or black");
             }
             server.joinGame(playerColor, gameId);
             DrawChessBoard.drawChessboard(null, playerColor);
