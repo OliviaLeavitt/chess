@@ -90,6 +90,8 @@ public class ChessClient {
     public String logout() throws ResponseException {
         server.logout(authToken);
         state = State.PRELOGIN;
+        authToken = null;
+        server.setAuthToken(null);
         return "You logged out.";
     }
 
@@ -132,9 +134,7 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
-            Game joinedGame = server.joinGame(null, gameId);
-            currentGame = joinedGame.game();
-            DrawChessBoard.drawChessboard(currentGame, null);
+            DrawChessBoard.drawChessboard(currentGame, "WHITE");
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -145,20 +145,21 @@ public class ChessClient {
         if (params.length == 2) {
             var playerColor = params[0].toUpperCase();
             var gameId = Integer.parseInt(params[1]);
+
             if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
-                throw new ResponseException(400, "Color must be white or black");
+                throw new ResponseException(400, "Error: Color must be WHITE or BLACK");
             }
-            Game joinedGame = server.joinGame(playerColor, gameId);
-            currentGame = joinedGame.game();
-            DrawChessBoard.drawChessboard(currentGame, playerColor);
-            return String.format("Joined game %d as player %s.", gameId, playerColor);
+            server.joinGame(playerColor, gameId);
+            DrawChessBoard.drawChessboard(null, playerColor);
+            return String.format("Joined game %d as player %s.  Displaying initial board state.", gameId, playerColor);
         }
-        throw new ResponseException(400, "Expected: <WHITE|BLACK> <gameID>");
+        throw new ResponseException(400, "Error: Expected: playgame <WHITE|BLACK> <game number>");
     }
 
     public String help() {
         if (state == State.PRELOGIN) {
             return """
+                    Available commands:
                     register <USERNAME> <PASSWORD> <EMAIL> - to create an account
                     login <USERNAME> <PASSWORD> - to play chess
                     quit - playing chess
@@ -166,13 +167,14 @@ public class ChessClient {
                     """;
         }
         return """
-                - logout
-                - creategame <gameName>
-                - listgames
-                - joingame <WHITE|BLACK> <gameID>
-                - observegame <gameID>
-                - help - with possible commands
-                - quit - playing chess
+                Available commands:
+                logout - log out of your account
+                creategame <gameName> - create a new game
+                listgames - list available games
+                playgame <WHITE|BLACK> <game number> - join a game as a player
+                observegame <game number> - observe a game
+                help - display available commands
+                quit - exit the program
                 """;
     }
 

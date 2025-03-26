@@ -78,7 +78,7 @@ public class ChessBoard {
 
     }
 
-    void setUpBlackSideOfBoard() {
+    public void setUpBlackSideOfBoard() {
         //setup rooks
         ChessPiece blackRook = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
         ChessPosition firstBlackRookPosition = new ChessPosition(8, 1);

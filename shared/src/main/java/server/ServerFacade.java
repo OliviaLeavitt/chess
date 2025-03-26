@@ -67,6 +67,7 @@ public class ServerFacade {
         return this.makeRequest("PUT", path, request, Game.class, authToken);
     }
 
+
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String header) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
