@@ -13,7 +13,6 @@ public class Repl {
 
     public void run() {
         System.out.println("Welcome 240 chess. Type Help to get started.");
-        System.out.print(client.help());
 
         Scanner scanner = new Scanner(System.in);
         var result = "";

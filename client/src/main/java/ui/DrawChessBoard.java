@@ -22,6 +22,7 @@ public class DrawChessBoard {
 
         drawHeaders(out, isBlackPerspective);
         drawBoard(out, board, isBlackPerspective);
+        drawHeaders(out, isBlackPerspective);
     }
 
     private static ChessBoard initializeBoard() {
@@ -49,7 +50,6 @@ public class DrawChessBoard {
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
             drawRow(out, board, row, isBlackPerspective);
         }
-        drawHeaders(out, isBlackPerspective);
     }
     private static void drawRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
         int sideHeaders = isBlackPerspective ? row + 1 : BOARD_SIZE_IN_SQUARES - row;

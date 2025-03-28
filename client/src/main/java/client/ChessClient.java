@@ -113,20 +113,6 @@ public class ChessClient {
         return result.toString();
     }
 
-    public String joinGame(String... params) throws ResponseException {
-        assertSignedIn();
-        if (params.length == 3) {
-            var playerColor = params[0].toUpperCase();
-            var gameId = Integer.parseInt(params[1]);
-            if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
-                throw new ResponseException(400, "Color must be white or black");
-            }
-            server.joinGame(playerColor, gameId);
-            return String.format("Joined game %d as player %s.", gameId, playerColor);
-        }
-        throw new ResponseException(400, "Expected: <gameID> <WHITE|BLACK>");
-    }
-
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
@@ -148,9 +134,9 @@ public class ChessClient {
             }
             server.joinGame(playerColor, gameId);
             DrawChessBoard.drawChessboard(null, playerColor);
-            return String.format("Joined game %d as player %s.  Displaying initial board state.", gameId, playerColor);
+            return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
-        throw new ResponseException(400, "Error: Expected: playgame <WHITE|BLACK> <game number>");
+        throw new ResponseException(400, "Error: Expected: playgame <WHITE or BLACK> <game number>");
     }
 
     public String help() {
@@ -168,7 +154,7 @@ public class ChessClient {
                 logout - log out of your account
                 creategame <gameName> - create a new game
                 listgames - list available games
-                playgame <WHITE|BLACK> <game number> - join a game as a player
+                playgame <WHITE or BLACK> <game number> - join a game as a player
                 observegame <game number> - observe a game
                 help - display available commands
                 quit - exit the program
