@@ -47,7 +47,18 @@ public class ChessClient {
                     case "quit" -> "quit";
                     default -> help();
                 };
-            } else {
+            } else if (state == State.INGAME) {
+                return switch (cmd) {
+                    case "redrawboard" -> redrawBoard();
+                    case "leave" -> leaveGame();
+                    case "makemove" -> makeMove();
+                    case "resign" -> resign();
+                    case "highlightmoves" -> highlightLegalMoves();
+                    default -> help();
+                };
+
+            }
+            else {
                 throw new IllegalStateException("Invalid client state: " + state);
             }
         } catch (ResponseException ex) {
@@ -55,6 +66,10 @@ public class ChessClient {
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String redrawBoard() {
+
     }
 
     public String register(String... params) throws ResponseException {
@@ -145,19 +160,30 @@ public class ChessClient {
                     Available commands:
                     register <USERNAME> <PASSWORD> <EMAIL> - to create an account
                     login <USERNAME> <PASSWORD> - to play chess
-                    quit - playing chess
-                    help - with possible commands
+                    quit - to quit playing chess
+                    help - to help with possible commands
+                    """;
+        } else if (state == State.INGAME) {
+            return """
+                    Available commands:
+                    redrawboard - to redraw the chess board
+                    leave - to leave the game
+                    makemove - to make move in chess
+                    resign -  to forfeit the game
+                    highlightmoves - to highlight all legal moves
+                    help - to help with possible commands
+                    quit - to quit playing chess
                     """;
         }
         return """
                 Available commands:
-                logout - log out of your account
-                creategame <gameName> - create a new game
-                listgames - list available games
-                playgame <WHITE or BLACK> <game number> - join a game as a player
-                observegame <game number> - observe a game
-                help - display available commands
-                quit - exit the program
+                logout - to log out of your account
+                creategame <gameName> - to create a new game
+                listgames - to list available games
+                playgame <WHITE or BLACK> <game number> - to join a game as a player
+                observegame <game number> - to observe a game
+                help - to display available commands
+                quit - to exit the program
                 """;
     }
 

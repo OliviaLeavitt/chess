@@ -81,7 +81,7 @@ public class DrawChessBoard {
         ChessPiece piece = board.getPiece(position);
 
         setSquareColor(out, actualRow, actualCol);
-        drawPieceOrEmpty(out, piece);
+        drawPiece(out, piece);
     }
 
 
@@ -90,15 +90,15 @@ public class DrawChessBoard {
         out.print(isDarkSquare ? SET_BG_COLOR_MAGENTA : SET_BG_COLOR_WHITE);
     }
 
-    private static void drawPieceOrEmpty(PrintStream out, ChessPiece piece) {
+    private static void drawPiece(PrintStream out, ChessPiece piece) {
         if (piece != null) {
-            out.print(getPieceSymbol(piece));
+            out.print(getPiece(piece));
         } else {
             out.print("    ");
         }
     }
 
-    private static String getPieceSymbol(ChessPiece piece) {
+    private static String getPiece(ChessPiece piece) {
         String color = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? "W" : "B";
         String symbol = switch (piece.getPieceType()) {
             case KING -> "K";
