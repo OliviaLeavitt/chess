@@ -3,8 +3,10 @@ package client;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Scanner;
 
-import chess.ChessGame;
+import chess.*;
 import exception.ResponseException;
 import model.User;
 import results.CreateResult;
@@ -49,9 +51,9 @@ public class ChessClient {
                 };
             } else if (state == State.INGAME) {
                 return switch (cmd) {
+                    case "makemove" -> makeMove();
                     case "redrawboard" -> redrawBoard();
                     case "leave" -> leaveGame();
-                    case "makemove" -> makeMove();
                     case "resign" -> resign();
                     case "highlightmoves" -> highlightLegalMoves();
                     default -> help();
@@ -68,7 +70,85 @@ public class ChessClient {
         }
     }
 
+    private String highlightLegalMoves() {
+    }
+
+    private String resign() {
+    }
+
+    private String leaveGame() {
+    }
+
+    private String makeMove() {
+        Scanner makeMoveScanner = new Scanner(System.in);
+        System.out.print("Enter your move (ex: a2a3). If promoting, add the piece name (ex: a7a8 queen): ");
+        String userMoveInput = makeMoveScanner.nextLine();
+
+        String[] userInputArray = userMoveInput.split(" ");
+        if (userInputArray[0].length() != 4) {
+            return "Invalid format: Please enter the start and end squares (ex: a2a3). If promoting, add the new piece (ex: a7a8 queen).";
+        }
+        if (userInputArray[0].charAt(0) < 'a' || userInputArray[0].charAt(0) > 'h' ||
+                userInputArray[0].charAt(2) < 'a' || userInputArray[0].charAt(2) > 'h') {
+            return "Invalid column. Please use columns a-h for both the start and end positions.";
+        }
+        if (userInputArray[0].charAt(1) < '1' || userInputArray[0].charAt(1) > '8' ||
+                userInputArray[0].charAt(3) < '1' || userInputArray[0].charAt(3) > '8') {
+            return "Invalid row. Please use rows 1-8 for both the start and end positions.";
+        }
+
+        try {
+            int startCol = userInputArray[0].charAt(0) - 'a' + 1;
+            int startRow = Character.getNumericValue(userInputArray[0].charAt(1));
+
+            int endCol = userInputArray[0].charAt(2) - 'a' + 1;
+            int endRow = Character.getNumericValue(userInputArray[0].charAt(3));
+
+            ChessPosition startPosition = new ChessPosition(startRow, startCol);
+            ChessPosition endPosition = new ChessPosition(endRow, endCol);
+            ChessBoard chessBoard = currentGame.getBoard();
+
+            ChessPiece movingPiece = chessBoard.getPiece(startPosition);
+            if (movingPiece == null) {
+                return "No piece at the start position. Choose a valid piece to move.";
+            }
+
+            ChessPiece.PieceType promotionPiece = null;
+            if (userInputArray.length == 2) {
+                try {
+                    promotionPiece = ChessPiece.PieceType.valueOf(userInputArray[1].toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return "Invalid promotion piece! Choose from: KING, QUEEN, BISHOP, KNIGHT, ROOK, or PAWN.";
+                }
+            } else if (userInputArray.length > 2) {
+                return "You entered an invalid number of arguments. Only enter your move and promotion piece, if applicable.";
+            }
+
+            ChessMove move = new ChessMove(endPosition, startPosition, promotionPiece);
+            Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.getBoard(), startPosition);
+            if (!validMoves.contains(move)) {
+                return "That move is invalid.";
+            }
+
+
+            currentGame.makeMove(move);
+            return "Move executed successfully.";
+        } catch (InvalidMoveException e) {
+            return "Error: The move could not be executed. It may be illegal or cause an invalid board state. " +
+                    "Please check your move and try again.";
+        }
+    }
+
+
+        //get input to move piece to
+        //create the move from input
+        // send that move back to serverfacade
+        // chessclient (creates move) -> serverfacade -> server -> service -> daos -> database
+
+
+
     private String redrawBoard() {
+
 
     }
 
@@ -112,8 +192,8 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             var gameName = params[0];
-            CreateResult result = server.createGame(gameName);
-            return String.format("Created game: %s (with game id: %d)", gameName, result.gameID());
+            CreateResult game = server.createGame(gameName);
+            return String.format("Created game: %s (with game id: %d)", gameName, game.gameID());
         }
         throw new ResponseException(400, "Expected: <gameName>");
     }
