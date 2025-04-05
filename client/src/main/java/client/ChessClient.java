@@ -53,9 +53,9 @@ public class ChessClient {
                 return switch (cmd) {
                     case "makemove" -> makeMove();
                     case "redrawboard" -> redrawBoard();
-                    case "leave" -> leaveGame();
-                    case "resign" -> resign();
-                    case "highlightmoves" -> highlightLegalMoves();
+//                    case "leave" -> leaveGame();
+//                    case "resign" -> resign();
+//                    case "highlightmoves" -> highlightLegalMoves();
                     default -> help();
                 };
 
@@ -70,14 +70,14 @@ public class ChessClient {
         }
     }
 
-    private String highlightLegalMoves() {
-    }
-
-    private String resign() {
-    }
-
-    private String leaveGame() {
-    }
+//    private String highlightLegalMoves() {
+//    }
+//
+//    private String resign() {
+//    }
+//
+//    private String leaveGame() {
+//    }
 
     private String makeMove() {
         Scanner makeMoveScanner = new Scanner(System.in);
@@ -148,7 +148,9 @@ public class ChessClient {
 
 
     private String redrawBoard() {
-
+        String currentTurn = currentGame.getTeamTurn().toString();
+        DrawChessBoard.drawChessboard(currentGame, currentTurn);
+        return "Here is your board";
 
     }
 
@@ -228,6 +230,8 @@ public class ChessClient {
                 throw new ResponseException(400, "Error: Must be white or black");
             }
             server.joinGame(playerColor, gameId);
+
+            state = State.INGAME;
             DrawChessBoard.drawChessboard(null, playerColor);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
