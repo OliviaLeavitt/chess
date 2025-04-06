@@ -7,7 +7,9 @@ import java.util.Collection;
 import java.util.Scanner;
 
 import chess.*;
+import com.google.gson.Gson;
 import exception.ResponseException;
+import model.Game;
 import model.User;
 import results.CreateResult;
 import results.LoginResult;
@@ -20,7 +22,9 @@ public class ChessClient {
     private String authToken = null;
     private final String serverUrl;
     private ChessGame currentGame;
+    private int currentgameId = 0;
     private State state = State.PRELOGIN;
+    private final Gson gson = new Gson();
 
     public ChessClient(String serverUrl) {
         this.serverUrl = serverUrl;
@@ -194,10 +198,24 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             var gameName = params[0];
-            CreateResult game = server.createGame(gameName);
-            return String.format("Created game: %s (with game id: %d)", gameName, game.gameID());
+            CreateResult gameResult = server.createGame(gameName);
+            int gameId = gameResult.gameID();
+            Game game = getGameFromId(gameId);
+            if (game != null) {
+                this.currentGame = game.game();
+                this.currentgameId = gameId;
+                return String.format("Created game: %s (with game id: %d)", gameName, gameId);
+            } else {
+                return String.format("Created game: %s (with game id: %d), but failed to retrieve game details.", gameName, gameId);
+            }
         }
         throw new ResponseException(400, "Expected: <gameName>");
+    }
+
+
+    public Game getGameFromId(int gameID) throws ResponseException {
+        assertSignedIn();
+        return server.getGame(gameID);
     }
 
     public String listGames() throws ResponseException {

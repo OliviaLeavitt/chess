@@ -60,6 +60,18 @@ public class ServerFacade {
         return response.games();
     }
 
+    public Game getGame(int gameID) throws ResponseException {
+        Game[] games = listGames(authToken);
+        if (games != null) {
+            for (Game game : games) {
+                if (game.gameID() == gameID) {
+                    return game;
+                }
+            }
+        }
+        return null;
+    }
+
     public Game joinGame(String playerColor, int gameId) throws ResponseException {
         var path = "/game";
         record JoinGameRequest(String playerColor, Integer gameID) {}
@@ -129,6 +141,7 @@ public class ServerFacade {
     private boolean isSuccessful(int status) {
         return status / 100 == 2;
     }
+
 }
 
 
