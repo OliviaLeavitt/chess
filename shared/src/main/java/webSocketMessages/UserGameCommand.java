@@ -2,14 +2,16 @@ package webSocketMessages;
 
 import com.google.gson.Gson;
 
-public record Action(Type commandType, String authToken, Integer gameID) {
-    public enum Type {
+public record UserGameCommand(CommandType commandType, String authToken, Integer gameID) {
+
+    public enum CommandType {
         CONNECT,
         MAKE_MOVE,
         LEAVE,
         RESIGN
     }
 
+    @Override
     public String toString() {
         return new Gson().toJson(this);
     }

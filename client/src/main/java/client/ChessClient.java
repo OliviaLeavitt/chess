@@ -83,6 +83,10 @@ public class ChessClient {
 //    private String leaveGame() {
 //    }
 
+    public void setCurrentGame(ChessGame game) {
+        this.currentGame = game;
+    }
+
     private String makeMove() {
         Scanner makeMoveScanner = new Scanner(System.in);
         System.out.print("Enter your move (ex: a2a3). If promoting, add the piece name (ex: a7a8 queen): ");

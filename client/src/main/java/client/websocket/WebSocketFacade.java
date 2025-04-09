@@ -5,6 +5,7 @@ import webSocketMessages.Notification;
 import exception.ResponseException;
 import webSocketMessages.Action;
 import webSocketMessages.Notification;
+import webSocketMessages.UserGameCommand;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -45,7 +46,16 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void enterPetShop(String visitorName) throws ResponseException {
+    public void connect(String authToken, int gameId) throws ResponseException {
+        try {
+            var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+            this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+//todo
+    public void makeMove(String visitorName) throws ResponseException {
         try {
             var action = new Action(Action.Type.ENTER, visitorName);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
@@ -53,10 +63,18 @@ public class WebSocketFacade extends Endpoint {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
-    public void leavePetShop(String visitorName) throws ResponseException {
+    public void leave(String authToken, int gameId) throws ResponseException {
         try {
-            var action = new Action(Action.Type.EXIT, visitorName);
+            var action = new Action(Action.Type.LEAVE, authToken, gameId);
+            this.session.getBasicRemote().sendText(new Gson().toJson(action));
+            this.session.close();
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+    public void resign(String authToken, int gameId) throws ResponseException {
+        try {
+            var action = new Action(Action.Type.RESIGN, authToken, gameId);
             this.session.getBasicRemote().sendText(new Gson().toJson(action));
             this.session.close();
         } catch (IOException ex) {
