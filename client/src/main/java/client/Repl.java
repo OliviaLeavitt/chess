@@ -1,13 +1,15 @@
 package client;
 
 import java.util.Scanner;
+
+import exception.ResponseException;
 import ui.EscapeSequences;
 
 
 public class Repl {
     private final client.ChessClient client;
 
-    public Repl(String serverUrl) {
+    public Repl(String serverUrl) throws ResponseException {
         client = new client.ChessClient(serverUrl);
     }
 

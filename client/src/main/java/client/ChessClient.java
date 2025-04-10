@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.Scanner;
 
 import chess.*;
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.Game;
@@ -15,20 +17,29 @@ import results.CreateResult;
 import results.LoginResult;
 import server.ServerFacade;
 import ui.DrawChessBoard;
+import webSocketMessages.Notification;
+import webSocketMessages.ServerMessage;
 
 
-public class ChessClient {
+
+import static webSocketMessages.ServerMessage.ServerMessageType.*;
+
+
+public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
     private String authToken = null;
+    private WebSocketFacade webSocketFacade;
     private final String serverUrl;
     private ChessGame currentGame;
     private int currentgameId = 0;
     private State state = State.PRELOGIN;
     private final Gson gson = new Gson();
+    private NotificationHandler notificationHandler;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
         this.serverUrl = serverUrl;
         server = new ServerFacade(serverUrl);
+        this.webSocketFacade = new WebSocketFacade(serverUrl, this);
     }
 
     public String eval(String input) {
@@ -89,69 +100,85 @@ public class ChessClient {
 
     private String makeMove() {
         Scanner makeMoveScanner = new Scanner(System.in);
-        System.out.print("Enter your move (ex: a2a3). If promoting, add the piece name (ex: a7a8 queen): ");
+        System.out.print("Enter your move (e.g., pawn a2a3 or a7a8 queen): ");
         String userMoveInput = makeMoveScanner.nextLine();
 
         String[] userInputArray = userMoveInput.split(" ");
-        if (userInputArray[0].length() != 4) {
-            return "Invalid format: Please enter the start and end squares (ex: a2a3). If promoting, add the new piece (ex: a7a8 queen).";
+
+        // Validate input format
+        if (userInputArray.length < 2 || userInputArray[1].length() != 4) {
+            return "Invalid format: Please enter the start and end squares (e.g., a2a3). If promoting, add the new piece (e.g., a7a8 queen).";
         }
-        if (userInputArray[0].charAt(0) < 'a' || userInputArray[0].charAt(0) > 'h' ||
-                userInputArray[0].charAt(2) < 'a' || userInputArray[0].charAt(2) > 'h') {
-            return "Invalid column. Please use columns a-h for both the start and end positions.";
-        }
-        if (userInputArray[0].charAt(1) < '1' || userInputArray[0].charAt(1) > '8' ||
-                userInputArray[0].charAt(3) < '1' || userInputArray[0].charAt(3) > '8') {
-            return "Invalid row. Please use rows 1-8 for both the start and end positions.";
+
+        // Validate column range (a-h) and row range (1-8)
+        char startColChar = userInputArray[1].charAt(0);
+        char endColChar = userInputArray[1].charAt(2);
+        char startRowChar = userInputArray[1].charAt(1);
+        char endRowChar = userInputArray[1].charAt(3);
+
+        if (startColChar < 'a' || startColChar > 'h' || endColChar < 'a' || endColChar > 'h' ||
+                startRowChar < '1' || startRowChar > '8' || endRowChar < '1' || endRowChar > '8') {
+            return "Invalid move. Columns must be a-h, and rows must be 1-8.";
         }
 
         try {
-            int startCol = userInputArray[0].charAt(0) - 'a' + 1;
-            int startRow = Character.getNumericValue(userInputArray[0].charAt(1));
-
-            int endCol = userInputArray[0].charAt(2) - 'a' + 1;
-            int endRow = Character.getNumericValue(userInputArray[0].charAt(3));
+            int startCol = startColChar - 'a';
+            int startRow = Character.getNumericValue(startRowChar) - 1;
+            int endCol = endColChar - 'a';
+            int endRow = Character.getNumericValue(endRowChar) - 1;
 
             ChessPosition startPosition = new ChessPosition(startRow, startCol);
             ChessPosition endPosition = new ChessPosition(endRow, endCol);
-            ChessBoard chessBoard = currentGame.getBoard();
 
-            ChessPiece movingPiece = chessBoard.getPiece(startPosition);
-            if (movingPiece == null) {
-                return "No piece at the start position. Choose a valid piece to move.";
-            }
+            ChessPiece.PieceType pieceType = ChessPiece.PieceType.valueOf(userInputArray[0].toUpperCase());
 
+            // Handle promotion if provided
             ChessPiece.PieceType promotionPiece = null;
-            if (userInputArray.length == 2) {
-                try {
-                    promotionPiece = ChessPiece.PieceType.valueOf(userInputArray[1].toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    return "Invalid promotion piece! Choose from: KING, QUEEN, BISHOP, KNIGHT, ROOK, or PAWN.";
+            if (userInputArray.length == 3) {
+                String promotionInput = userInputArray[2].toLowerCase();
+                if (promotionInput.equals("queen") || promotionInput.equals("rook") ||
+                        promotionInput.equals("bishop") || promotionInput.equals("knight")) {
+                    promotionPiece = ChessPiece.PieceType.valueOf(promotionInput.toUpperCase());
+                } else {
+                    return "Invalid promotion piece! Choose from: QUEEN, ROOK, BISHOP, KNIGHT.";
                 }
-            } else if (userInputArray.length > 2) {
-                return "You entered an invalid number of arguments. Only enter your move and promotion piece, if applicable.";
             }
 
-            ChessMove move = new ChessMove(endPosition, startPosition, promotionPiece);
+            // Pawn promotion logic
+            if (promotionPiece != null) {
+                if ((startRow == 1 && endRow == 0) || (startRow == 6 && endRow == 7)) {
+                    ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
+                    this.webSocketFacade.makeMove(move, authToken, currentgameId);
+                    return "Pawn promoted to " + promotionPiece.toString().toLowerCase() + " and move executed successfully.";
+                } else {
+                    return "Promotion is only allowed when a pawn reaches the 8th row (for white) or the 1st row (for black).";
+                }
+            }
+
+            // Regular move
+            ChessMove move = new ChessMove(startPosition, endPosition, null);
+
+
+            // Validate if the move is legal for the piece
+            ChessPiece movingPiece = currentGame.getBoard().getPiece(startPosition);
             Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.getBoard(), startPosition);
             if (!validMoves.contains(move)) {
                 return "That move is invalid.";
             }
 
-
-            currentGame.makeMove(move);
+            // Execute the move and update the board
+            this.webSocketFacade.makeMove(move, authToken, currentgameId);
+            redrawBoard();
             return "Move executed successfully.";
-        } catch (InvalidMoveException e) {
-            return "Error: The move could not be executed. It may be illegal or cause an invalid board state. " +
-                    "Please check your move and try again.";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
     }
 
-
-        //get input to move piece to
-        //create the move from input
-        // send that move back to serverfacade
-        // chessclient (creates move) -> serverfacade -> server -> service -> daos -> database
+    //get input to move piece to
+    //create the move from input
+    // send that move back to serverfacade
+    // chessclient (creates move) -> serverfacade -> server -> service -> daos -> database
 
 
 
@@ -202,19 +229,14 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 1) {
             var gameName = params[0];
-            CreateResult gameResult = server.createGame(gameName);
-            int gameId = gameResult.gameID();
-            Game game = getGameFromId(gameId);
-            if (game != null) {
-                this.currentGame = game.game();
-                this.currentgameId = gameId;
-                return String.format("Created game: %s (with game id: %d)", gameName, gameId);
-            } else {
-                return String.format("Created game: %s (with game id: %d), but failed to retrieve game details.", gameName, gameId);
-            }
+            CreateResult result = server.createGame(gameName);
+            this.currentgameId = result.gameID();
+
+            return String.format("Created game: %s (with game id: %d)", gameName, currentgameId);
         }
         throw new ResponseException(400, "Expected: <gameName>");
     }
+
 
 
     public Game getGameFromId(int gameID) throws ResponseException {
@@ -296,6 +318,24 @@ public class ChessClient {
     private void assertSignedIn() throws ResponseException {
         if (state == State.PRELOGIN) {
             throw new ResponseException(400, "You must log in");
+        }
+    }
+
+
+    public void handleServerMessage(ServerMessage message) {
+        switch (message.serverMessageType) {
+            case LOAD_GAME:
+                this.currentGame = message.getGame();
+                this.redrawBoard();
+                break;
+//            case ERROR:
+//                System.out.println("Error: " + message.getErrorMessage());
+//                break;
+//            case NOTIFICATION:
+//                System.out.println("Notification: " + message.getNotificationMessage());
+//                break;
+            default:
+                System.out.println("Unknown message received in handleServerMessage in ChessClient.");
         }
     }
 }
