@@ -1,5 +1,8 @@
 package server.websocket;
 
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
@@ -35,7 +38,7 @@ public class WebSocketHandler {
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.commandType()) {
             case CONNECT -> connect(userGameCommand.authToken(), session, userGameCommand.gameID());
-            case MAKE_MOVE -> makeMove(userGameCommand, userGameCommand.authToken());
+            case MAKE_MOVE -> makeMove(userGameCommand, session, userGameCommand.authToken());
             case LEAVE -> leave(userGameCommand.authToken());
             case RESIGN -> resign(userGameCommand.authToken());
         }
@@ -73,24 +76,70 @@ public class WebSocketHandler {
 
     }
 
-
-    private void makeMove(UserGameCommand command, String authToken) throws IOException, InvalidMoveException, ResponseException {
+    private void makeMove(UserGameCommand command, Session session, String authToken) throws IOException, ResponseException {
         Auth authData = authDAO.getAuth(authToken);
+
+        if (authData == null) {
+            var errorMessage = "Invalid authentication token.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
+
         String userName = authData.username();
         int gameId = command.gameID();
         Game game = gameDAO.getGame(gameId);
+        ChessPosition start = command.move().getStartPosition();
+        ChessPiece piece = game.game().getBoard().getPiece(start);
+        ChessGame.TeamColor currentTurn = game.game().getTeamTurn();
+        String whiteUser = game.whiteUsername();
+        String blackUser = game.blackUsername();
 
-        game.game().makeMove(command.move());
 
-        // Send updated game state to the root client (the player who made the move)
+        if ((currentTurn == ChessGame.TeamColor.WHITE && !userName.equals(whiteUser)) ||
+                (currentTurn == ChessGame.TeamColor.BLACK && !userName.equals(blackUser))) {
+            String errorMessage = "Invalid move: You can't move your opponent's piece. It's not your turn.";
+            ServerMessage errorResponse = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            connections.sendOneMessage(userName, errorResponse);
+            return;
+        }
+
+        try {
+            game.game().makeMove(command.move());
+        } catch (InvalidMoveException e) {
+            String errorMessage = "Invalid move: " + e.getMessage();
+            ServerMessage invalidMoveMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            connections.sendOneMessage(userName, invalidMoveMessage);
+            return;
+        }
+
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
         connections.broadcast("", loadGameMessage);
 
-        // Send a notification to all other clients in the game (excluding the root client)
-        String moveMessage = String.format("Move made: %s", command.move());
-        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
-        connections.broadcast(userName, notification);
+        ChessGame.TeamColor currentPlayerColor = game.game().getTeamTurn();
+        boolean isCheck = game.game().isInCheck(currentPlayerColor);
+        boolean isCheckmate = game.game().isInCheckmate(currentPlayerColor);
+        boolean isStalemate = game.game().isInStalemate(currentPlayerColor);
+
+        String gameStatusMessage = "";
+        if (isCheckmate) {
+            gameStatusMessage = "Checkmate! Game over.";
+        } else if (isStalemate) {
+            gameStatusMessage = "Stalemate! Game over.";
+        } else if (isCheck) {
+            gameStatusMessage = "Check! The king is in danger.";
+        }
+
+        if (!gameStatusMessage.isEmpty()) {
+            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, gameStatusMessage, null);
+            connections.broadcast("", notification);
+        } else {
+            String moveMessage = String.format("Move made: %s", command.move());
+            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
+            connections.broadcast(userName, notification);
+        }
     }
+
 
     private void leave(String userName) throws IOException {
         connections.remove(userName);
