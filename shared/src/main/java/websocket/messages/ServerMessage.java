@@ -1,14 +1,18 @@
 package webSocketMessages;
 
 import chess.ChessGame;
+import model.Game;
 
 public class ServerMessage {
-    private ChessGame game;
+    private Game game;
     private String errorMessage;
     private String notificationMessage;
 
-    public ServerMessage(ServerMessageType serverMessageType) {
+    public ServerMessage(ServerMessageType serverMessageType, String errorMessage, String notificationMessage, Game game) {
         this.serverMessageType = serverMessageType;
+        this.errorMessage = errorMessage;
+        this.notificationMessage = notificationMessage;
+        this.game = game;
 
     }
 
@@ -21,7 +25,7 @@ public class ServerMessage {
         }
     }
 
-    public ChessGame getGame() {
+    public Game getGame() {
         return game;
     }
 
