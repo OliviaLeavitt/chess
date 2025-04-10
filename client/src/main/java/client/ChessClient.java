@@ -64,8 +64,8 @@ public class ChessClient implements NotificationHandler {
                 return switch (cmd) {
                     case "makemove" -> makeMove();
                     case "redrawboard" -> redrawBoard();
-//                    case "leave" -> leaveGame();
-//                    case "resign" -> resign();
+                    case "leave" -> leaveGame();
+                    case "resign" -> resign();
 //                    case "highlightmoves" -> highlightLegalMoves();
                     default -> help();
                 };
@@ -83,12 +83,17 @@ public class ChessClient implements NotificationHandler {
 
 //    private String highlightLegalMoves() {
 //    }
-//
-//    private String resign() {
-//    }
-//
-//    private String leaveGame() {
-//    }
+    private String leaveGame() throws ResponseException {
+        this.webSocketFacade.leave(authToken, currentgameId, userName);
+        state = State.POSTLOGIN;
+        return "You have left the game.";
+    }
+
+    private String resign() throws ResponseException {
+        this.webSocketFacade.resign(authToken, currentgameId, userName);
+        state = State.POSTLOGIN;
+        return "You have resigned from the game.";
+    }
 
     public void setCurrentGame(ChessGame game) {
         this.currentGame = game;
@@ -101,12 +106,10 @@ public class ChessClient implements NotificationHandler {
 
         String[] userInputArray = userMoveInput.split(" ");
 
-        // Validate input format
         if (userInputArray.length < 2 || userInputArray[1].length() != 4) {
             return "Invalid format: Please enter the start and end squares (e.g., a2a3). If promoting, add the new piece (e.g., a7a8 queen).";
         }
 
-        // Validate column range (a-h) and row range (1-8)
         char startColChar = userInputArray[1].charAt(0);
         char endColChar = userInputArray[1].charAt(2);
         char startRowChar = userInputArray[1].charAt(1);
@@ -128,7 +131,6 @@ public class ChessClient implements NotificationHandler {
 
             ChessPiece.PieceType pieceType = ChessPiece.PieceType.valueOf(userInputArray[0].toUpperCase());
 
-            // Handle promotion if provided
             ChessPiece.PieceType promotionPiece = null;
             if (userInputArray.length == 3) {
                 String promotionInput = userInputArray[2].toLowerCase();
@@ -140,7 +142,6 @@ public class ChessClient implements NotificationHandler {
                 }
             }
 
-            // Pawn promotion logic
             if (promotionPiece != null) {
                 if ((startRow == 1 && endRow == 0) || (startRow == 6 && endRow == 7)) {
                     ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
@@ -151,18 +152,15 @@ public class ChessClient implements NotificationHandler {
                 }
             }
 
-            // Regular move
             ChessMove move = new ChessMove(startPosition, endPosition, null);
 
 
-            // Validate if the move is legal for the piece
             ChessPiece movingPiece = currentGame.getBoard().getPiece(startPosition);
             Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.getBoard(), startPosition);
             if (!validMoves.contains(move)) {
                 return "That move is invalid.";
             }
 
-            // Execute the move and update the board
             this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
             redrawBoard();
             return "Move executed successfully.";
@@ -322,16 +320,20 @@ public class ChessClient implements NotificationHandler {
     public void handleServerMessage(ServerMessage message) {
         switch (message.serverMessageType) {
             case LOAD_GAME:
+                // When a game is loaded, set the current game and redraw the board
                 this.currentGame = message.getGame();
                 this.redrawBoard();
                 break;
-//            case ERROR:
-//                System.out.println("Error: " + message.getErrorMessage());
-//                break;
-//            case NOTIFICATION:
-//                System.out.println("Notification: " + message.getNotificationMessage());
-//                break;
+            case ERROR:
+                // Handle any error messages from the server
+                System.out.println("Error: " + message.getErrorMessage());
+                break;
+            case NOTIFICATION:
+                // Handle any notification messages from the server
+                System.out.println("Notification: " + message.getNotificationMessage());
+                break;
             default:
+                // If an unknown message type is received, log it
                 System.out.println("Unknown message received in handleServerMessage in ChessClient.");
         }
     }
