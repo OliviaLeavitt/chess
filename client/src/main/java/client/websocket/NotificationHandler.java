@@ -1,6 +1,5 @@
 package client.websocket;
 
-import webSocketMessages.Notification;
 import webSocketMessages.ServerMessage;
 
 public interface NotificationHandler {

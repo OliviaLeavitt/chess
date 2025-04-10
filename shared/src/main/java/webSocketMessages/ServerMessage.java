@@ -5,9 +5,8 @@ import chess.ChessGame;
 public class ServerMessage {
     private ChessGame game;
 
-    public ServerMessage(ChessGame game) {
-        this.serverMessageType = ServerMessageType.LOAD_GAME;
-        this.game = game;
+    public ServerMessage(ServerMessageType serverMessageType) {
+        this.serverMessageType = serverMessageType;
     }
 
     public ChessGame getGame() {

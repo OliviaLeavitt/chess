@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 
 public record UserGameCommand(
         CommandType commandType, String authToken,
-        Integer gameID, ChessMove move) {
+        Integer gameID, ChessMove move, String userName) {
 
     public enum CommandType {
         CONNECT,
@@ -17,5 +17,10 @@ public record UserGameCommand(
     @Override
     public String toString() {
         return new Gson().toJson(this);
+    }
+
+
+    public boolean hasMove() {
+        return move != null;
     }
 }

@@ -17,12 +17,7 @@ import results.CreateResult;
 import results.LoginResult;
 import server.ServerFacade;
 import ui.DrawChessBoard;
-import webSocketMessages.Notification;
 import webSocketMessages.ServerMessage;
-
-
-
-import static webSocketMessages.ServerMessage.ServerMessageType.*;
 
 
 public class ChessClient implements NotificationHandler {
@@ -35,6 +30,7 @@ public class ChessClient implements NotificationHandler {
     private State state = State.PRELOGIN;
     private final Gson gson = new Gson();
     private NotificationHandler notificationHandler;
+    private String userName;
 
     public ChessClient(String serverUrl) throws ResponseException {
         this.serverUrl = serverUrl;
@@ -148,7 +144,7 @@ public class ChessClient implements NotificationHandler {
             if (promotionPiece != null) {
                 if ((startRow == 1 && endRow == 0) || (startRow == 6 && endRow == 7)) {
                     ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
-                    this.webSocketFacade.makeMove(move, authToken, currentgameId);
+                    this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
                     return "Pawn promoted to " + promotionPiece.toString().toLowerCase() + " and move executed successfully.";
                 } else {
                     return "Promotion is only allowed when a pawn reaches the 8th row (for white) or the 1st row (for black).";
@@ -167,7 +163,7 @@ public class ChessClient implements NotificationHandler {
             }
 
             // Execute the move and update the board
-            this.webSocketFacade.makeMove(move, authToken, currentgameId);
+            this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
             redrawBoard();
             return "Move executed successfully.";
         } catch (Exception e) {
@@ -212,6 +208,7 @@ public class ChessClient implements NotificationHandler {
             authToken = result.authToken();
             server.setAuthToken(authToken);
             state = State.POSTLOGIN;
+            this.userName = username;
             return String.format("You logged in as %s.", username);
         }
         throw new ResponseException(400, "Expected: <username> <password>");

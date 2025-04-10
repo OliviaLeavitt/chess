@@ -12,6 +12,7 @@ import results.CreateResult;
 import results.ListResult;
 import results.LoginResult;
 import results.RegisterResult;
+import server.websocket.WebSocketHandler;
 import service.*;
 import requests.LoginRequest;
 import requests.JoinRequest;
@@ -21,11 +22,17 @@ public class Server {
     private final UserDAO userDAO = new MySQLUserDAO();
     private final AuthDAO authDAO = new MySQLAuthDAO();
     private final GameDAO gameDAO = new MySQLGameDAO();
+    private final WebSocketHandler webSocketHandler;
+
+    public Server() {
+        this.webSocketHandler = new WebSocketHandler();
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+        Spark.webSocket("/ws", webSocketHandler);
 
         try {
             DatabaseManager.configureDatabase();
