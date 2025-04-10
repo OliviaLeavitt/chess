@@ -34,51 +34,62 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) throws IOException, InvalidMoveException, ResponseException {
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.commandType()) {
-            case CONNECT -> enter(userGameCommand.authToken(), session, userGameCommand.gameID());
-            case MAKE_MOVE -> makeMove(userGameCommand);
+            case CONNECT -> connect(userGameCommand.authToken(), session, userGameCommand.gameID());
+            case MAKE_MOVE -> makeMove(userGameCommand, userGameCommand.authToken());
             case LEAVE -> leave(userGameCommand.authToken());
             case RESIGN -> resign(userGameCommand.authToken());
         }
     }
 
-    private void enter(String authToken, Session session, int gameId) throws IOException, ResponseException {
+    private void connect(String authToken, Session session, int gameId) throws IOException, ResponseException {
         Auth authData = authDAO.getAuth(authToken);
         if (authData == null) {
             var errorMessage = "Invalid authentication token.";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
-            connections.sendOneMessage(authToken, errorServerMessage);
-            return;
-        }
-        String userName = authData.username();
-        connections.add(userName, session, gameId);
-
-        var message = String.format("%s has joined the game.", userName);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, message, null);
-        Game game = gameDAO.getGame(gameId);
-        if (game == null) {
-            var errorMessage = "Invalid gameId.";
-            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null); // make actual errormessage
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
             return;
         }
-        ServerMessage clientMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
+        String userName = authData.username();
 
-        connections.sendOneMessage(userName, clientMessage);
-        connections.broadcast(userName, serverMessage);
+        Game game = gameDAO.getGame(gameId);
+        if (game == null) {
+            var errorMessage = "Invalid gameId.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
+
+        // Add the new player (root client) to the connections list
+        connections.add(userName, session, gameId);
+
+        // Send the game state to the newly joined (root) player
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
+        connections.sendOneMessage(userName, loadGameMessage);
+
+        // Notify everyone else that the root client has joined, excluding the newly joined player
+        String joinMessage = String.format("%s has joined the game.", userName);
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, joinMessage, null);
+        connections.broadcast(userName, notification);
+
     }
 
-    private void makeMove(UserGameCommand command) throws IOException, InvalidMoveException, ResponseException {
 
+    private void makeMove(UserGameCommand command, String authToken) throws IOException, InvalidMoveException, ResponseException {
+        Auth authData = authDAO.getAuth(authToken);
+        String userName = authData.username();
         int gameId = command.gameID();
         Game game = gameDAO.getGame(gameId);
 
-        ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
-
         game.game().makeMove(command.move());
 
-        var moveMessage = String.format("Move made: %s", command.move());
+        // Send updated game state to the root client (the player who made the move)
+        ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
+        connections.broadcast("", loadGameMessage);
 
-        connections.broadcast("", serverMessage);
+        // Send a notification to all other clients in the game (excluding the root client)
+        String moveMessage = String.format("Move made: %s", command.move());
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
+        connections.broadcast(userName, notification);
     }
 
     private void leave(String userName) throws IOException {
