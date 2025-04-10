@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import exception.ResponseException;
@@ -28,6 +29,6 @@ public class CreateService {
         Game createdGame = gameDataAccess.createGame(gameName);
         int gameID = createdGame.gameID();
 
-        return new CreateResult(gameID);
+        return new CreateResult(gameID, createdGame);
     }
 }

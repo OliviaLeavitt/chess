@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.*;
 import dataaccess.mysql.MySQLAuthDAO;
@@ -8,6 +9,7 @@ import dataaccess.mysql.MySQLUserDAO;
 import exception.ResponseException;
 import model.Game;
 import model.User;
+import requests.CreateRequest;
 import results.CreateResult;
 import results.ListResult;
 import results.LoginResult;
@@ -25,11 +27,12 @@ public class Server {
     private final WebSocketHandler webSocketHandler;
 
     public Server() {
-        this.webSocketHandler = new WebSocketHandler();
+        this.webSocketHandler = new WebSocketHandler(gameDAO, authDAO);
     }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
+
 
         Spark.staticFiles.location("web");
         Spark.webSocket("/ws", webSocketHandler);
@@ -74,7 +77,8 @@ public class Server {
     private Object createGame(Request req, Response res) {
         String authToken = req.headers("authorization");
         try {
-            Game game = new Gson().fromJson(req.body(), Game.class);
+            CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
+            Game game = new Game(100, null, null, createRequest.gameName(), new ChessGame());
             CreateService createService = new CreateService(authDAO, gameDAO);
             CreateResult gameResult = createService.createGame(authToken, game);
             res.status(200);

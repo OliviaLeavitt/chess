@@ -1,11 +1,11 @@
-package webSocketMessages;
+package websocket.commands;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
 
 public record UserGameCommand(
         CommandType commandType, String authToken,
-        Integer gameID, ChessMove move, String userName) {
+        Integer gameID, ChessMove move) {
 
     public enum CommandType {
         CONNECT,

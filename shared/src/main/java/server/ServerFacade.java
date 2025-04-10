@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import model.Auth;
 import model.Game;
 import model.User;
@@ -49,7 +50,7 @@ public class ServerFacade {
 
     public CreateResult createGame(String gameName) throws ResponseException, IOException, URISyntaxException {
         var path = "/game";
-        var request = new CreateRequest(gameName);
+        var request = new CreateRequest(gameName, new ChessGame());
         return this.makeRequest("POST", path, request, CreateResult.class, authToken);
     }
 

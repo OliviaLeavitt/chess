@@ -1,5 +1,6 @@
 import chess.*;
 import server.Server;
+import server.websocket.WebSocketHandler;
 
 
 public class Main {
@@ -8,6 +9,7 @@ public class Main {
         System.out.println("♕ 240 Chess Server: " + piece);
 
         Server server = new Server();
+
         server.run(8081);
 
 

@@ -1,7 +1,8 @@
 package server.websocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
-import webSocketMessages.ServerMessage;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ConnectionManager {
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
                 if (!c.userName.equals(excludeUserName)) {
-                    c.send(serverMessage.toString());
+                    c.send(new Gson().toJson(serverMessage));
                 }
             } else {
                 removeList.add(c);
@@ -33,5 +34,10 @@ public class ConnectionManager {
         for (var c : removeList) {
             connections.remove(c.userName);
         }
+    }
+
+    public void sendOneMessage(String userName, ServerMessage serverMessage) throws IOException {
+        Connection connection = connections.get(userName);
+        connection.send(new Gson().toJson(serverMessage));
     }
 }

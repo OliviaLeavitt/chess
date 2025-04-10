@@ -3,8 +3,9 @@ package client.websocket;
 import chess.ChessMove;
 import client.ChessClient;
 import com.google.gson.Gson;
-import webSocketMessages.*;
 import exception.ResponseException;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.IOException;

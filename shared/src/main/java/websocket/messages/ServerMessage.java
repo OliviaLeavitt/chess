@@ -1,17 +1,16 @@
-package webSocketMessages;
+package websocket.messages;
 
-import chess.ChessGame;
 import model.Game;
 
 public class ServerMessage {
     private Game game;
     private String errorMessage;
-    private String notificationMessage;
+    private String message;
 
     public ServerMessage(ServerMessageType serverMessageType, String errorMessage, String notificationMessage, Game game) {
         this.serverMessageType = serverMessageType;
         this.errorMessage = errorMessage;
-        this.notificationMessage = notificationMessage;
+        this.message = notificationMessage;
         this.game = game;
 
     }
@@ -21,7 +20,7 @@ public class ServerMessage {
         if (serverMessageType == ServerMessageType.ERROR) {
             this.errorMessage = message;
         } else if (serverMessageType == ServerMessageType.NOTIFICATION) {
-            this.notificationMessage = message;
+            this.message = message;
         }
     }
 
@@ -34,7 +33,7 @@ public class ServerMessage {
     }
 
     public String getNotificationMessage() {
-        return notificationMessage;
+        return message;
     }
 
     public enum ServerMessageType {
