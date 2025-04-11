@@ -207,10 +207,11 @@ public class ChessClient implements NotificationHandler {
 //            }
 
             this.webSocketFacade.makeMove(move, authToken, gameToDrawBoardWith.gameID(), userName);
-            gameToDrawBoardWith = server.getGame(gameToDrawBoardWith.gameID());
+//            gameToDrawBoardWith = server.getGame(gameToDrawBoardWith.gameID());
+            currentGame = gameToDrawBoardWith;
             String currentTurn = gameToDrawBoardWith.game().getTeamTurn().toString();
 
-            DrawChessBoard.drawChessboard(gameToDrawBoardWith, currentTurn, null);
+            DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
             return "Move executed successfully.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
