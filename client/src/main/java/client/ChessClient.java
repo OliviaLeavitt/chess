@@ -17,7 +17,13 @@ import results.CreateResult;
 import results.LoginResult;
 import server.ServerFacade;
 import ui.DrawChessBoard;
+import websocket.commands.MakeMoveCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
+
+import static client.Repl.printPrompt;
 
 
 public class ChessClient implements NotificationHandler {
@@ -167,8 +173,6 @@ public class ChessClient implements NotificationHandler {
             ChessPosition startPosition = new ChessPosition(startRow, startCol);
             ChessPosition endPosition = new ChessPosition(endRow, endCol);
 
-            ChessPiece.PieceType pieceType = ChessPiece.PieceType.valueOf(userInputArray[0].toUpperCase());
-
             ChessPiece.PieceType promotionPiece = null;
             if (userInputArray.length == 3) {
                 String promotionInput = userInputArray[2].toLowerCase();
@@ -190,39 +194,21 @@ public class ChessClient implements NotificationHandler {
                 }
             }
 
-            Game gameToDrawBoardWith = null;
-            for (Game game : games) {
-                if (game.gameID() == currentgameId) {
-                    gameToDrawBoardWith = game;
-                }
-            }
-
             ChessMove move = new ChessMove(startPosition, endPosition, null);
 
 
-//            ChessPiece movingPiece = currentGame.getBoard().getPiece(startPosition);
-//            Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.getBoard(), startPosition);
-//            if (!validMoves.contains(move)) {
-//                return "That move is invalid.";
-//            }
+            ChessPiece movingPiece = currentGame.game().getBoard().getPiece(startPosition);
+            Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.game().getBoard(), startPosition);
+            if (!validMoves.contains(move)) {
+                return "That move is invalid.";
+            }
 
-            this.webSocketFacade.makeMove(move, authToken, gameToDrawBoardWith.gameID(), userName);
-//            gameToDrawBoardWith = server.getGame(gameToDrawBoardWith.gameID());
-            currentGame = gameToDrawBoardWith;
-            String currentTurn = gameToDrawBoardWith.game().getTeamTurn().toString();
-
-            DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
+            this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
             return "Move executed successfully.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
     }
-
-    //get input to move piece to
-    //create the move from input
-    // send that move back to serverfacade
-    // chessclient (creates move) -> serverfacade -> server -> service -> daos -> database
-
 
 
     private String redrawBoard() {
@@ -302,7 +288,7 @@ public class ChessClient implements NotificationHandler {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
-            DrawChessBoard.drawChessboard(currentGame, "WHITE", null);
+            this.webSocketFacade.connect(authToken, currentgameId, userName);
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -322,7 +308,7 @@ public class ChessClient implements NotificationHandler {
             this.currentgameId = gameId;
 
             state = State.INGAME;
-            DrawChessBoard.drawChessboard(null, playerColor, null);
+            this.webSocketFacade.connect(authToken, currentgameId, userName);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
         throw new ResponseException(400, "Error: Expected: playgame <WHITE or BLACK> <game number>");
@@ -368,20 +354,28 @@ public class ChessClient implements NotificationHandler {
     }
 
 
-    public void handleServerMessage(ServerMessage message) {
-        switch (message.serverMessageType) {
-            case LOAD_GAME:
-                this.currentGame = message.getGame();
-                this.redrawBoard();
-                break;
-            case ERROR:
-                System.out.println("Error: " + message.getErrorMessage());
-                break;
-            case NOTIFICATION:
-                System.out.println("Notification: " + message.getNotificationMessage());
-                break;
-            default:
-                System.out.println("Unknown message received in handleServerMessage in ChessClient.");
+    public void handleServerMessage(String message) {
+
+        try {
+            System.out.println();
+            switch (new Gson().fromJson(message, ServerMessage.class).getServerMessageType()) {
+                case LOAD_GAME:
+                    this.currentGame = new Gson().fromJson(message, LoadGameMessage.class).getGame();
+                    this.redrawBoard();
+                    break;
+                case ERROR:
+                    System.out.println("Error: " + new Gson().fromJson(message, ErrorMessage.class).getErrorMessage());
+                    break;
+                case NOTIFICATION:
+                    System.out.println("Notification: " + new Gson().fromJson(message, NotificationMessage.class).getNotificationMessage());
+                    break;
+                default:
+                    System.out.println("Unknown message received in handleServerMessage in ChessClient.");
+            }
+        } catch (Exception e) {
+            System.out.println("something went wrong in handle server message in chess client: " + e.getMessage());
         }
+        printPrompt();
+
     }
 }

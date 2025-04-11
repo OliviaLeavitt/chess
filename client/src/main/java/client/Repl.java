@@ -33,7 +33,7 @@ public class Repl {
         System.out.println();
     }
 
-    private void printPrompt() {
+    static void printPrompt() {
         System.out.print("\n" + EscapeSequences.RESET_TEXT_COLOR + ">>> " + EscapeSequences.SET_TEXT_COLOR_GREEN);
 
     }
