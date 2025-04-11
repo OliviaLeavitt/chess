@@ -15,6 +15,7 @@ import model.Game;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import websocket.commands.MakeMoveCommand;
 import websocket.messages.ServerMessage;
 import websocket.commands.UserGameCommand;
 
@@ -42,7 +43,10 @@ public class WebSocketHandler {
         UserGameCommand userGameCommand = new Gson().fromJson(message, UserGameCommand.class);
         switch (userGameCommand.commandType()) {
             case CONNECT -> connect(userGameCommand.authToken(), session, userGameCommand.gameID());
-            case MAKE_MOVE -> makeMove(userGameCommand, session, userGameCommand.authToken());
+            case MAKE_MOVE -> {
+                MakeMoveCommand makeMoveCommand = new Gson().fromJson(message, MakeMoveCommand.class);
+                makeMove(makeMoveCommand, session, makeMoveCommand.authToken());
+            }
             case LEAVE -> leave(userGameCommand);
             case RESIGN -> resign(userGameCommand.authToken(), session, userGameCommand.gameID());
         }
@@ -72,11 +76,11 @@ public class WebSocketHandler {
 
         String joinMessage = String.format("%s has joined the game.", userName);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, joinMessage, null);
-        connections.broadcast(userName, notification);
+        connections.broadcast(userName, notification, gameId);
 
     }
 
-    private void makeMove(UserGameCommand command, Session session, String authToken) throws IOException, ResponseException {
+    private void makeMove(MakeMoveCommand command, Session session, String authToken) throws IOException, ResponseException {
         Auth authData = authDAO.getAuth(authToken);
         if (authData == null) {
             var errorMessage = "Invalid authentication token.";
@@ -88,7 +92,7 @@ public class WebSocketHandler {
         String userName = authData.username();
         int gameId = command.gameID();
         Game game = gameDAO.getGame(gameId);
-        ChessPosition start = command.move().getStartPosition();
+        ChessPosition start = command.getMove().getStartPosition();
         ChessPiece piece = game.game().getBoard().getPiece(start);
         ChessGame.TeamColor currentTurn = game.game().getTeamTurn();
         String whiteUser = game.whiteUsername();
@@ -111,7 +115,7 @@ public class WebSocketHandler {
         }
 
         try {
-            game.game().makeMove(command.move());
+            game.game().makeMove(command.getMove());
             Game newGame = new Game(command.gameID(), whiteUser, blackUser, game.gameName(), game.game());
             gameDAO.updateGame(newGame);
         } catch (InvalidMoveException e) {
@@ -122,7 +126,7 @@ public class WebSocketHandler {
         }
 
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
-        connections.broadcast("", loadGameMessage);
+        connections.broadcast("", loadGameMessage, gameId);
 
         ChessGame.TeamColor currentPlayerColor = game.game().getTeamTurn();
         boolean isCheck = game.game().isInCheck(currentPlayerColor);
@@ -141,12 +145,12 @@ public class WebSocketHandler {
 
         if (!gameStatusMessage.isEmpty()) {
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, gameStatusMessage, null);
-            connections.broadcast("", notification);
+            connections.broadcast("", notification, gameId);
         }
 
-            String moveMessage = String.format("Move made: %s", command.move());
+        String moveMessage = String.format("Move made: %s", command.getMove());
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
-            connections.broadcast(userName, notification);
+            connections.broadcast(userName, notification, gameId);
 
     }
 
@@ -174,7 +178,7 @@ public class WebSocketHandler {
 
         String leaveMessage = String.format("%s has left the game.", userName);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, leaveMessage, null);
-        connections.broadcast(userName, serverMessage);
+        connections.broadcast(userName, serverMessage, game.gameID());
 
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
@@ -231,7 +235,7 @@ public class WebSocketHandler {
 
         String message = String.format("%s has resigned. Game over.", userName);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, message, null);
-        connections.broadcast("", serverMessage);
+        connections.broadcast("", serverMessage, gameId);
     }
 
 

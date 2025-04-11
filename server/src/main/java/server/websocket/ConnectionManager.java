@@ -19,10 +19,10 @@ public class ConnectionManager {
     public void remove(String userName) {
         connections.remove(userName);
     }
-    public void broadcast(String excludeUserName, ServerMessage serverMessage) throws IOException {
+    public void broadcast(String excludeUserName, ServerMessage serverMessage, int gameId) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
-            if (c.session.isOpen()) {
+            if (c.session.isOpen() && c.gameId == gameId) {
                 if (!c.userName.equals(excludeUserName)) {
                     c.send(new Gson().toJson(serverMessage));
                 }

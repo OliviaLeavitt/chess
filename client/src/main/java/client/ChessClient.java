@@ -3,6 +3,7 @@ package client;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Scanner;
 
 import chess.*;
@@ -66,7 +67,7 @@ public class ChessClient implements NotificationHandler {
                     case "redrawboard" -> redrawBoard();
                     case "leave" -> leaveGame();
                     case "resign" -> resign();
-//                    case "highlightmoves" -> highlightLegalMoves();
+                    case "highlightmoves" -> highlightLegalMoves();
                     default -> help();
                 };
 
@@ -81,8 +82,48 @@ public class ChessClient implements NotificationHandler {
         }
     }
 
-//    private String highlightLegalMoves() {
-//    }
+    private String highlightLegalMoves() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the position of the piece (ex: e1): ");
+        String input = scanner.nextLine().trim().toLowerCase();
+
+        if (input.length() != 2) {
+            return "Invalid number of arguments. Please use the format like e2.";
+        }
+
+        char colChar = input.charAt(0);
+        char rowChar = input.charAt(1);
+
+        if (colChar < 'a' || colChar > 'h' || rowChar < '1' || rowChar > '8') {
+            return "Invalid position. Columns must be a-h and rows must be 1-8.";
+        }
+
+        int col = colChar - 'a' + 1;
+        int row = Character.getNumericValue(rowChar);
+
+        ChessPosition position = new ChessPosition(row, col);
+        ChessPiece piece = currentGame.game().getBoard().getPiece(position);
+
+        if (piece == null) {
+            return "There is no piece at that position.";
+        }
+
+        Collection<ChessMove> validMoves = currentGame.game().validMoves(position);
+
+        if (validMoves.isEmpty()) {
+            return "No legal moves available for this piece.";
+        }
+
+        String validMovesString = "Here are your valid move options:\n";
+        for (ChessMove move : validMoves) {
+            validMovesString += move.toString() + "\n";
+        }
+
+        DrawChessBoard.drawChessboard(currentGame, currentGame.game().getTeamTurn().toString(), validMoves);
+
+        return validMovesString;
+    }
+
     private String leaveGame() throws ResponseException {
         this.webSocketFacade.leave(authToken, currentgameId, userName);
         state = State.POSTLOGIN;
@@ -95,9 +136,6 @@ public class ChessClient implements NotificationHandler {
         return "You have resigned from the game.";
     }
 
-//    public void setCurrentGame(ChessGame game) {
-//        this.currentGame = game;
-//    }
 
     private String makeMove() {
         Scanner makeMoveScanner = new Scanner(System.in);
@@ -161,8 +199,11 @@ public class ChessClient implements NotificationHandler {
 //                return "That move is invalid.";
 //            }
 
-            this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
-//            redrawBoard();
+            this.webSocketFacade.makeMove(move, authToken, currentGame.gameID(), userName);
+            currentGame = server.getGame(currentGame.gameID());
+            String currentTurn = currentGame.game().getTeamTurn().toString();
+
+            DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
             return "Move executed successfully.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -178,7 +219,7 @@ public class ChessClient implements NotificationHandler {
 
     private String redrawBoard() {
         String currentTurn = currentGame.game().getTeamTurn().toString();
-        DrawChessBoard.drawChessboard(currentGame.game(), currentTurn);
+        DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
         return "Here is your board";
 
     }
@@ -239,13 +280,6 @@ public class ChessClient implements NotificationHandler {
         throw new ResponseException(400, "Expected: <gameName>");
     }
 
-
-
-//    public Game getGameFromId(int gameID) throws ResponseException {
-//        assertSignedIn();
-//        return server.getGame(gameID);
-//    }
-
     public String listGames() throws ResponseException {
         assertSignedIn();
         this.games = server.listGames(authToken);
@@ -260,7 +294,7 @@ public class ChessClient implements NotificationHandler {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
-            DrawChessBoard.drawChessboard(currentGame.game(), "WHITE");
+            DrawChessBoard.drawChessboard(currentGame, "WHITE", null);
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -279,7 +313,7 @@ public class ChessClient implements NotificationHandler {
             server.joinGame(playerColor, gameId);
 
             state = State.INGAME;
-            DrawChessBoard.drawChessboard(null, playerColor);
+            DrawChessBoard.drawChessboard(null, playerColor, null);
             return String.format("Joined game %d as player %s.", gameId, playerColor);
         }
         throw new ResponseException(400, "Error: Expected: playgame <WHITE or BLACK> <game number>");

@@ -1,27 +1,26 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+import model.Game;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 import static ui.EscapeSequences.*;
 
 public class DrawChessBoard {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
 
-    public static void drawChessboard(ChessGame game, String playerColor) {
+    public static void drawChessboard(Game game, String playerColor, Collection<ChessMove> highlights) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
 
         boolean isBlackPerspective = "BLACK".equalsIgnoreCase(playerColor);
-        ChessBoard board = initializeBoard();
+        ChessBoard board = (game != null) ? game.game().getBoard() : initializeBoard();
 
         drawHeaders(out, isBlackPerspective);
-        drawBoard(out, board, isBlackPerspective);
+        drawBoard(out, board, isBlackPerspective, highlights);
         drawHeaders(out, isBlackPerspective);
     }
 
@@ -38,7 +37,7 @@ public class DrawChessBoard {
         String[] whiteHeaders = {"a", "b", "c", "d", "e", "f", "g", "h"};
         String[] blackHeaders = {"h", "g", "f", "e", "d", "c", "b", "a"};
 
-        headers = isBlackPerspective ? blackHeaders : whiteHeaders;;
+        headers = isBlackPerspective ? blackHeaders : whiteHeaders;
 
         for (String header : headers) {
             out.print(" " + header + "  ");
@@ -46,33 +45,34 @@ public class DrawChessBoard {
         out.println();
     }
 
-    private static void drawBoard(PrintStream out, ChessBoard board, boolean isBlackPerspective) {
+    private static void drawBoard(PrintStream out, ChessBoard board, boolean isBlackPerspective, Collection<ChessMove> highlights) {
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; row++) {
-            drawRow(out, board, row, isBlackPerspective);
+            drawRow(out, board, row, isBlackPerspective, highlights);
         }
     }
-    private static void drawRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
+    private static void drawRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective, Collection<ChessMove> highlights) {
         int sideHeaders = isBlackPerspective ? row + 1 : BOARD_SIZE_IN_SQUARES - row;
         out.print(sideHeaders);
         out.print(" ");
 
-        colorRow(out, board, row, isBlackPerspective);
+        colorRow(out, board, row, isBlackPerspective, highlights);
 
         out.print(RESET_BG_COLOR);
         out.print(" ");
         out.print(sideHeaders);
-        System.out.println();
+        out.println();
     }
 
-    private static void colorRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective) {
+    private static void colorRow(PrintStream out, ChessBoard board, int row, boolean isBlackPerspective, Collection<ChessMove> highlights) {
         for (int col = 0; col < BOARD_SIZE_IN_SQUARES; col++) {
             out.print(SET_TEXT_COLOR_WHITE);
-            drawSquare(out, board, row, col, isBlackPerspective);
+            drawSquare(out, board, row, col, isBlackPerspective, highlights);
             out.print(SET_TEXT_COLOR_WHITE);
         }
     }
 
-    private static void drawSquare(PrintStream out, ChessBoard board, int row, int col, boolean isBlackPerspective) {
+
+    private static void drawSquare(PrintStream out, ChessBoard board, int row, int col, boolean isBlackPerspective, Collection<ChessMove> highlights) {
         out.print(SET_TEXT_COLOR_BLACK);
         int actualCol = isBlackPerspective ? BOARD_SIZE_IN_SQUARES - col - 1 : col;
         int actualRow = isBlackPerspective ? row : BOARD_SIZE_IN_SQUARES - row - 1;
@@ -80,8 +80,24 @@ public class DrawChessBoard {
         ChessPosition position = new ChessPosition(actualRow + 1, actualCol + 1);
         ChessPiece piece = board.getPiece(position);
 
-        setSquareColor(out, actualRow, actualCol);
+        if (isHighlighted(position, highlights)) {
+            out.print(SET_BG_COLOR_GREEN);
+        } else {
+            setSquareColor(out, actualRow, actualCol);
+        }
+
         drawPiece(out, piece);
+    }
+
+    private static boolean isHighlighted(ChessPosition position, Collection<ChessMove> highlights) {
+        if (highlights == null) return false;
+
+        for (ChessMove move : highlights) {
+            if (move.getEndPosition().equals(position)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
