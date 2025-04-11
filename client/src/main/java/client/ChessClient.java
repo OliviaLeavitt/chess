@@ -190,6 +190,13 @@ public class ChessClient implements NotificationHandler {
                 }
             }
 
+            Game gameToDrawBoardWith = null;
+            for (Game game : games) {
+                if (game.gameID() == currentgameId) {
+                    gameToDrawBoardWith = game;
+                }
+            }
+
             ChessMove move = new ChessMove(startPosition, endPosition, null);
 
 
@@ -199,11 +206,11 @@ public class ChessClient implements NotificationHandler {
 //                return "That move is invalid.";
 //            }
 
-            this.webSocketFacade.makeMove(move, authToken, currentGame.gameID(), userName);
-            currentGame = server.getGame(currentGame.gameID());
-            String currentTurn = currentGame.game().getTeamTurn().toString();
+            this.webSocketFacade.makeMove(move, authToken, gameToDrawBoardWith.gameID(), userName);
+            gameToDrawBoardWith = server.getGame(gameToDrawBoardWith.gameID());
+            String currentTurn = gameToDrawBoardWith.game().getTeamTurn().toString();
 
-            DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
+            DrawChessBoard.drawChessboard(gameToDrawBoardWith, currentTurn, null);
             return "Move executed successfully.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -311,6 +318,7 @@ public class ChessClient implements NotificationHandler {
             }
 
             server.joinGame(playerColor, gameId);
+            this.currentgameId = gameId;
 
             state = State.INGAME;
             DrawChessBoard.drawChessboard(null, playerColor, null);

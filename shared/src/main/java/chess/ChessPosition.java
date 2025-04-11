@@ -14,10 +14,10 @@ public class ChessPosition {
 
     public ChessPosition(int row, int col) {
         if (row > 8 || row < 1) {
-            System.out.println("row out of bounds: " + row);
+            System.out.println("something is wrong because row out of bounds (in chess position): " + row);
         }
         if (col > 8 || col < 1) {
-            System.out.println("col out of bounds: " + col);
+            System.out.println("something is wrong because row out of bounds (in chess position) " + col);
         }
         this.row = row;
         this.col = col;

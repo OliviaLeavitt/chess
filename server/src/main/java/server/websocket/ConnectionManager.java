@@ -26,14 +26,13 @@ public class ConnectionManager {
 
     public void broadcast(String excludeUserName, ServerMessage serverMessage, int gameId) throws IOException {
         var removeList = new ArrayList<String>();
-        for (var entry : connections.entrySet()) {
-            var conn = entry.getValue();
-            if (conn.session.isOpen() && conn.gameId == gameId) {
-                if (!conn.userName.equals(excludeUserName)) {
-                    conn.send(new Gson().toJson(serverMessage));
+        for (var c : connections.values()) {
+            if (c.session.isOpen() && c.gameId == gameId) {
+                if (!c.userName.equals(excludeUserName)) {
+                    c.send(new Gson().toJson(serverMessage));
                 }
-            } else if (!conn.session.isOpen()) {
-                removeList.add(entry.getKey());
+            } else if (!c.session.isOpen()) {
+                removeList.add(key(c.userName, c.gameId));
             }
         }
 
