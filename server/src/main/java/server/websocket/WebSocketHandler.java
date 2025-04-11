@@ -19,6 +19,7 @@ import websocket.messages.ServerMessage;
 import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
+import java.util.Objects;
 
 
 @WebSocket
@@ -27,6 +28,7 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
     private GameDAO gameDAO;
     private AuthDAO authDAO;
+    private boolean resigned;
 
     public WebSocketHandler(GameDAO gameDao, AuthDAO authDao) {
         this.gameDAO = gameDao;
@@ -40,7 +42,7 @@ public class WebSocketHandler {
             case CONNECT -> connect(userGameCommand.authToken(), session, userGameCommand.gameID());
             case MAKE_MOVE -> makeMove(userGameCommand, session, userGameCommand.authToken());
             case LEAVE -> leave(userGameCommand.authToken());
-            case RESIGN -> resign(userGameCommand.authToken());
+            case RESIGN -> resign(userGameCommand.authToken(), session, userGameCommand.gameID());
         }
     }
 
@@ -61,15 +63,11 @@ public class WebSocketHandler {
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
             return;
         }
-
-        // Add the new player (root client) to the connections list
         connections.add(userName, session, gameId);
 
-        // Send the game state to the newly joined (root) player
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
         connections.sendOneMessage(userName, loadGameMessage);
 
-        // Notify everyone else that the root client has joined, excluding the newly joined player
         String joinMessage = String.format("%s has joined the game.", userName);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, joinMessage, null);
         connections.broadcast(userName, notification);
@@ -78,7 +76,6 @@ public class WebSocketHandler {
 
     private void makeMove(UserGameCommand command, Session session, String authToken) throws IOException, ResponseException {
         Auth authData = authDAO.getAuth(authToken);
-
         if (authData == null) {
             var errorMessage = "Invalid authentication token.";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
@@ -94,6 +91,13 @@ public class WebSocketHandler {
         ChessGame.TeamColor currentTurn = game.game().getTeamTurn();
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
+
+        if (resigned) {
+            var errorMessage = "You cannot make another move because the game has already ended due to a resignation.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
 
 
         if ((currentTurn == ChessGame.TeamColor.WHITE && !userName.equals(whiteUser)) ||
@@ -150,10 +154,48 @@ public class WebSocketHandler {
 
 
 
-    private void resign(String userName) throws IOException {
-        var message = String.format("%s has resigned from the game.", userName);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, null, null);
-        connections.broadcast(userName, serverMessage);
+    private void resign(String authToken, Session session, int gameId) throws IOException, ResponseException {
+        Auth authData = authDAO.getAuth(authToken);
+        if (authData == null) {
+            var errorMessage = "Invalid authentication token.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
+
+        Game game = gameDAO.getGame(gameId);
+        if (game == null) {
+            var errorMessage = "There is no game to resign from.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
+        String userName = authData.username();
+
+        String whiteUser = game.whiteUsername();
+        String blackUser = game.blackUsername();
+
+        if (!userName.equals(whiteUser) && !userName.equals(blackUser)) {
+            var errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Only a player in the game can resign.", null, null);
+            connections.sendOneMessage(userName, errorMessage);
+            return;
+        }
+
+        if (userName.equals(game.blackUsername())) {
+            new Game(gameId, whiteUser, null, game.gameName(), game.game());
+            gameDAO.updateGame(game);
+            resigned = true;
+        } else if (userName.equals(game.whiteUsername())) {
+            new Game(gameId, null, blackUser, game.gameName(), game.game());
+            gameDAO.updateGame(game);
+            resigned = true;
+        }
+
+        String message = String.format("%s has resigned. Game over.", userName);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, message, null);
+        connections.broadcast("", serverMessage);
     }
+
 
 }
