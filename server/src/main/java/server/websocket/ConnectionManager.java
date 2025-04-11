@@ -9,35 +9,43 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+
+    private String key(String userName, int gameId) {
+        return userName + ":" + gameId;
+    }
 
     public void add(String userName, Session session, int gameId) {
         var connection = new Connection(userName, session, gameId);
-        connections.put(userName, connection);
+        connections.put(key(userName, gameId), connection);
     }
 
-    public void remove(String userName) {
-        connections.remove(userName);
+    public void remove(String userName, int gameId) {
+        connections.remove(key(userName, gameId));
     }
+
     public void broadcast(String excludeUserName, ServerMessage serverMessage, int gameId) throws IOException {
-        var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen() && c.gameId == gameId) {
-                if (!c.userName.equals(excludeUserName)) {
-                    c.send(new Gson().toJson(serverMessage));
+        var removeList = new ArrayList<String>();
+        for (var entry : connections.entrySet()) {
+            var conn = entry.getValue();
+            if (conn.session.isOpen() && conn.gameId == gameId) {
+                if (!conn.userName.equals(excludeUserName)) {
+                    conn.send(new Gson().toJson(serverMessage));
                 }
-            } else {
-                removeList.add(c);
+            } else if (!conn.session.isOpen()) {
+                removeList.add(entry.getKey());
             }
         }
 
-        for (var c : removeList) {
-            connections.remove(c.userName);
+        for (var key : removeList) {
+            connections.remove(key);
         }
     }
 
-    public void sendOneMessage(String userName, ServerMessage serverMessage) throws IOException {
-        Connection connection = connections.get(userName);
-        connection.send(new Gson().toJson(serverMessage));
+    public void sendOneMessage(String userName, int gameId, ServerMessage serverMessage) throws IOException {
+        Connection connection = connections.get(key(userName, gameId));
+        if (connection != null) {
+            connection.send(new Gson().toJson(serverMessage));
+        }
     }
 }

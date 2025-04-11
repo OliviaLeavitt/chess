@@ -31,7 +31,7 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
     private GameDAO gameDAO;
     private AuthDAO authDAO;
-    private final Set<Integer> resignedGames = new HashSet<>();
+
 
     public WebSocketHandler(GameDAO gameDao, AuthDAO authDao) {
         this.gameDAO = gameDao;
@@ -72,7 +72,7 @@ public class WebSocketHandler {
         connections.add(userName, session, gameId);
 
         ServerMessage loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, null, game);
-        connections.sendOneMessage(userName, loadGameMessage);
+        connections.sendOneMessage(userName, game.gameID(),loadGameMessage);
 
         String joinMessage = String.format("%s has joined the game.", userName);
         ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, joinMessage, null);
@@ -98,8 +98,8 @@ public class WebSocketHandler {
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
 
-        if (resignedGames.contains(gameId)) {
-            var errorMessage = "You cannot make another move because the game has already ended due to a resignation.";
+        if (game.gameOver()) {
+            var errorMessage = "can't move if game is over";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
             return;
@@ -110,18 +110,18 @@ public class WebSocketHandler {
                 (currentTurn == ChessGame.TeamColor.BLACK && !userName.equals(blackUser))) {
             String errorMessage = "Invalid move: You can't move your opponent's piece. It's not your turn.";
             ServerMessage errorResponse = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
-            connections.sendOneMessage(userName, errorResponse);
+            connections.sendOneMessage(userName, game.gameID(), errorResponse);
             return;
         }
 
         try {
             game.game().makeMove(command.getMove());
-            Game newGame = new Game(command.gameID(), whiteUser, blackUser, game.gameName(), game.game());
+            Game newGame = new Game(command.gameID(), whiteUser, blackUser, game.gameName(), game.game(), false);
             gameDAO.updateGame(newGame);
         } catch (InvalidMoveException e) {
             String errorMessage = "Invalid move: " + e.getMessage();
             ServerMessage invalidMoveMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
-            connections.sendOneMessage(userName, invalidMoveMessage);
+            connections.sendOneMessage(userName, game.gameID(), invalidMoveMessage);
             return;
         }
 
@@ -149,8 +149,8 @@ public class WebSocketHandler {
         }
 
         String moveMessage = String.format("Move made: %s", command.getMove());
-            ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
-            connections.broadcast(userName, notification, gameId);
+        ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
+        connections.broadcast(userName, notification, gameId);
 
     }
 
@@ -160,7 +160,7 @@ public class WebSocketHandler {
         if (authData == null) {
             var errorMessage = "Invalid authentication token.";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
-            connections.sendOneMessage(authData.username(), errorServerMessage);
+            connections.sendOneMessage(authData.username(), command.gameID(), errorServerMessage);
             return;
         }
 
@@ -170,11 +170,11 @@ public class WebSocketHandler {
         if (game == null) {
             var errorMessage = "You are not in a game.";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
-            connections.sendOneMessage(userName, errorServerMessage);
+            connections.sendOneMessage(userName, game.gameID(), errorServerMessage);
             return;
         }
 
-        connections.remove(userName);
+        connections.remove(userName, game.gameID());
 
         String leaveMessage = String.format("%s has left the game.", userName);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, leaveMessage, null);
@@ -183,10 +183,10 @@ public class WebSocketHandler {
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
         if (userName.equals(game.blackUsername())) {
-            Game newGame = new Game(game.gameID(), whiteUser, null, game.gameName(), game.game());
+            Game newGame = new Game(game.gameID(), whiteUser, null, game.gameName(), game.game(), false);
             gameDAO.updateGame(newGame);
         } else if (userName.equals(game.whiteUsername())) {
-            Game newGame = new Game(game.gameID(), null, blackUser, game.gameName(), game.game());
+            Game newGame = new Game(game.gameID(), null, blackUser, game.gameName(), game.game(), false);
             gameDAO.updateGame(newGame);
         }
 
@@ -195,6 +195,7 @@ public class WebSocketHandler {
 
 
     private void resign(String authToken, Session session, int gameId) throws IOException, ResponseException {
+
         Auth authData = authDAO.getAuth(authToken);
         if (authData == null) {
             var errorMessage = "Invalid authentication token.";
@@ -210,6 +211,14 @@ public class WebSocketHandler {
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
             return;
         }
+
+        if (game.gameOver()) {
+            var errorMessage = "You can't double resign.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            session.getRemote().sendString(new Gson().toJson(errorServerMessage));
+            return;
+        }
+
         String userName = authData.username();
 
         String whiteUser = game.whiteUsername();
@@ -218,17 +227,17 @@ public class WebSocketHandler {
         if (!userName.equals(whiteUser) && !userName.equals(blackUser)) {
             var errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR,
                     "Only a player in the game can resign.", null, null);
-            connections.sendOneMessage(userName, errorMessage);
+            connections.sendOneMessage(userName, gameId, errorMessage);
             return;
         }
 
-        if (!resignedGames.contains(gameId)) {
-            resignedGames.add(gameId);
+        if (!game.gameOver()) {
+
             if (userName.equals(game.blackUsername())) {
-                Game newGame = new Game(gameId, whiteUser, null, game.gameName(), game.game());
+                Game newGame = new Game(gameId, whiteUser, null, game.gameName(), game.game(), true);
                 gameDAO.updateGame(newGame);
             } else if (userName.equals(game.whiteUsername())) {
-                Game newGame = new Game(gameId, null, blackUser, game.gameName(), game.game());
+                Game newGame = new Game(gameId, null, blackUser, game.gameName(), game.game(), true);
                 gameDAO.updateGame(newGame);
             }
         }

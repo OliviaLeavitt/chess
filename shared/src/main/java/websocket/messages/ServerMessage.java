@@ -15,15 +15,6 @@ public class ServerMessage {
 
     }
 
-    public ServerMessage(ServerMessageType serverMessageType, String message) {
-        this.serverMessageType = serverMessageType;
-        if (serverMessageType == ServerMessageType.ERROR) {
-            this.errorMessage = message;
-        } else if (serverMessageType == ServerMessageType.NOTIFICATION) {
-            this.message = message;
-        }
-    }
-
     public Game getGame() {
         return game;
     }

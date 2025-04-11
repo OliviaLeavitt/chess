@@ -78,7 +78,7 @@ public class Server {
         String authToken = req.headers("authorization");
         try {
             CreateRequest createRequest = new Gson().fromJson(req.body(), CreateRequest.class);
-            Game game = new Game(100, null, null, createRequest.gameName(), new ChessGame());
+            Game game = new Game(100, null, null, createRequest.gameName(), new ChessGame(), false);
             CreateService createService = new CreateService(authDAO, gameDAO);
             CreateResult gameResult = createService.createGame(authToken, game);
             res.status(200);

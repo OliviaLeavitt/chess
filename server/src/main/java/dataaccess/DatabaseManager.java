@@ -57,6 +57,7 @@ public class DatabaseManager {
             whiteUsername VARCHAR(255) DEFAULT NULL,
             blackUsername VARCHAR(255) DEFAULT NULL,
             gameJson TEXT,
+            gameOver BOOLEAN,
             PRIMARY KEY(gameID)
             )
             """,

@@ -30,7 +30,7 @@ public class CreateServiceTest {
         String username = "testUsername";
         authDAO.createAuth(new Auth(authToken, username));
 
-        Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());
+        Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame(), false);
         CreateResult gameResult = createService.createGame(authToken, gameData);
         assertNotNull(gameResult);
 
@@ -44,7 +44,7 @@ public class CreateServiceTest {
         String username = "testUsername";
         authDAO.createAuth(new Auth(trueAuthToken, username));
 
-        Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame());
+        Game gameData = new Game(1, "whiteUsername", "blackUsername", "TestGame", new chess.ChessGame(), false);
         String invalidAuthToken = "invalidAuthToken";
         try {
             createService.createGame(invalidAuthToken, gameData);

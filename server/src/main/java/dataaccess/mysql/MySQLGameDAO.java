@@ -21,9 +21,9 @@ public class MySQLGameDAO extends MySQLParentDAO implements GameDAO {
 
     @Override
     public Game createGame(Game game) throws ResponseException {
-        String statement = "INSERT INTO games (gameName, whiteUsername, blackUsername, gameJson) VALUES (?, ?, ?, ?)";
+        String statement = "INSERT INTO games (gameName, whiteUsername, blackUsername, gameJson, gameOver) VALUES (?, ?, ?, ?, ?)";
         String gameJson = new Gson().toJson(game.game());
-        int gameID = executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson);
+        int gameID = executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson, 0);
         return getGame(gameID);
     }
 
@@ -51,8 +51,9 @@ public class MySQLGameDAO extends MySQLParentDAO implements GameDAO {
         String blackUsername = rs.getString("blackUsername");
         String gameName = rs.getString("gameName");
         String gameJson = rs.getString("gameJson");
+        Boolean gameOver = rs.getBoolean("gameOver");
         var game = new Gson().fromJson(gameJson, ChessGame.class);
-        return new Game(gameID, whiteUsername, blackUsername, gameName, game);
+        return new Game(gameID, whiteUsername, blackUsername, gameName, game, gameOver);
     }
 
     @Override
@@ -75,9 +76,9 @@ public class MySQLGameDAO extends MySQLParentDAO implements GameDAO {
 
     @Override
     public void updateGame(Game game) throws ResponseException {
-        String statement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameJson = ? WHERE gameID = ?";
+        String statement = "UPDATE games SET gameName = ?, whiteUsername = ?, blackUsername = ?, gameJson = ?, gameOver = ? WHERE gameID = ?";
         String gameJson = new Gson().toJson(game.game());
-        executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson, game.gameID());
+        executeUpdate(statement, game.gameName(), game.whiteUsername(), game.blackUsername(), gameJson, game.gameOver() ? 1 : 0, game.gameID());
     }
 
 }

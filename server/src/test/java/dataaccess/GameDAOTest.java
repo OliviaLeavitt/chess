@@ -22,8 +22,8 @@ public class GameDAOTest {
 
     @Test
     void createGames() throws ResponseException {
-        Game game0 = new Game(0, "whiteUser", "blackUser", "testGame0", new ChessGame());
-        Game game1 = new Game(0, "whiteUser1", "blackUser1", "testGame1", new ChessGame());
+        Game game0 = new Game(0, "whiteUser", "blackUser", "testGame0", new ChessGame(), false);
+        Game game1 = new Game(0, "whiteUser1", "blackUser1", "testGame1", new ChessGame(), false);
         Game createdGame0 = gameDAO.createGame(game0);
         Game createdGame1 = gameDAO.createGame(game1);
 

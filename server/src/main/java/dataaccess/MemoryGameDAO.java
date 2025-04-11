@@ -15,7 +15,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     public Game createGame(Game game) {
-        game = new Game(nextId++, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+        game = new Game(nextId++, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game(), game.gameOver());
         games.put(game.gameID(), game);
         return game;
     }

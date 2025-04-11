@@ -51,10 +51,10 @@ public class JoinService {
 
     private Game updateGameData(Game gameData, String playerColor, String newUsername) throws ResponseException {
         if (playerColor.equals("WHITE")) {
-            return new Game(gameData.gameID(), newUsername, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            return new Game(gameData.gameID(), newUsername, gameData.blackUsername(), gameData.gameName(), gameData.game(), gameData.gameOver());
         }
         if (playerColor.equals("BLACK")) {
-            return new Game(gameData.gameID(), gameData.whiteUsername(), newUsername, gameData.gameName(), gameData.game());
+            return new Game(gameData.gameID(), gameData.whiteUsername(), newUsername, gameData.gameName(), gameData.game(), gameData.gameOver());
         } else {
             throw new ResponseException(400, "Error: bad request");
         }

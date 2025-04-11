@@ -13,12 +13,20 @@ import java.util.Objects;
 public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
+    boolean gameOver;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
 
+    }
+
+    public boolean getGameOver() {
+        return this.gameOver;
+    }
+    public void setGameOver(boolean bool) {
+        this.gameOver = bool;
     }
 
     /**
