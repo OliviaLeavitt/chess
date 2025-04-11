@@ -19,7 +19,9 @@ import websocket.messages.ServerMessage;
 import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 
 @WebSocket
@@ -28,7 +30,7 @@ public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
     private GameDAO gameDAO;
     private AuthDAO authDAO;
-    private boolean resigned;
+    private final Set<Integer> resignedGames = new HashSet<>();
 
     public WebSocketHandler(GameDAO gameDao, AuthDAO authDao) {
         this.gameDAO = gameDao;
@@ -41,7 +43,7 @@ public class WebSocketHandler {
         switch (userGameCommand.commandType()) {
             case CONNECT -> connect(userGameCommand.authToken(), session, userGameCommand.gameID());
             case MAKE_MOVE -> makeMove(userGameCommand, session, userGameCommand.authToken());
-            case LEAVE -> leave(userGameCommand.authToken());
+            case LEAVE -> leave(userGameCommand);
             case RESIGN -> resign(userGameCommand.authToken(), session, userGameCommand.gameID());
         }
     }
@@ -92,7 +94,7 @@ public class WebSocketHandler {
         String whiteUser = game.whiteUsername();
         String blackUser = game.blackUsername();
 
-        if (resigned) {
+        if (resignedGames.contains(gameId)) {
             var errorMessage = "You cannot make another move because the game has already ended due to a resignation.";
             var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
@@ -110,6 +112,8 @@ public class WebSocketHandler {
 
         try {
             game.game().makeMove(command.move());
+            Game newGame = new Game(command.gameID(), whiteUser, blackUser, game.gameName(), game.game());
+            gameDAO.updateGame(newGame);
         } catch (InvalidMoveException e) {
             String errorMessage = "Invalid move: " + e.getMessage();
             ServerMessage invalidMoveMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
@@ -125,6 +129,7 @@ public class WebSocketHandler {
         boolean isCheckmate = game.game().isInCheckmate(currentPlayerColor);
         boolean isStalemate = game.game().isInStalemate(currentPlayerColor);
 
+
         String gameStatusMessage = "";
         if (isCheckmate) {
             gameStatusMessage = "Checkmate! Game over.";
@@ -137,19 +142,50 @@ public class WebSocketHandler {
         if (!gameStatusMessage.isEmpty()) {
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, gameStatusMessage, null);
             connections.broadcast("", notification);
-        } else {
+        }
+
             String moveMessage = String.format("Move made: %s", command.move());
             ServerMessage notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, moveMessage, null);
             connections.broadcast(userName, notification);
-        }
+
     }
 
 
-    private void leave(String userName) throws IOException {
+    private void leave(UserGameCommand command) throws IOException, ResponseException {
+        Auth authData = authDAO.getAuth(command.authToken());
+        if (authData == null) {
+            var errorMessage = "Invalid authentication token.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            connections.sendOneMessage(authData.username(), errorServerMessage);
+            return;
+        }
+
+        String userName = authData.username();
+
+        Game game = gameDAO.getGame(command.gameID());
+        if (game == null) {
+            var errorMessage = "You are not in a game.";
+            var errorServerMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, errorMessage, null, null);
+            connections.sendOneMessage(userName, errorServerMessage);
+            return;
+        }
+
         connections.remove(userName);
-        var message = String.format("%s has left the game.", userName);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, null, null);
+
+        String leaveMessage = String.format("%s has left the game.", userName);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, null, leaveMessage, null);
         connections.broadcast(userName, serverMessage);
+
+        String whiteUser = game.whiteUsername();
+        String blackUser = game.blackUsername();
+        if (userName.equals(game.blackUsername())) {
+            Game newGame = new Game(game.gameID(), whiteUser, null, game.gameName(), game.game());
+            gameDAO.updateGame(newGame);
+        } else if (userName.equals(game.whiteUsername())) {
+            Game newGame = new Game(game.gameID(), null, blackUser, game.gameName(), game.game());
+            gameDAO.updateGame(newGame);
+        }
+
     }
 
 
@@ -182,14 +218,15 @@ public class WebSocketHandler {
             return;
         }
 
-        if (userName.equals(game.blackUsername())) {
-            new Game(gameId, whiteUser, null, game.gameName(), game.game());
-            gameDAO.updateGame(game);
-            resigned = true;
-        } else if (userName.equals(game.whiteUsername())) {
-            new Game(gameId, null, blackUser, game.gameName(), game.game());
-            gameDAO.updateGame(game);
-            resigned = true;
+        if (!resignedGames.contains(gameId)) {
+            resignedGames.add(gameId);
+            if (userName.equals(game.blackUsername())) {
+                Game newGame = new Game(gameId, whiteUser, null, game.gameName(), game.game());
+                gameDAO.updateGame(newGame);
+            } else if (userName.equals(game.whiteUsername())) {
+                Game newGame = new Game(gameId, null, blackUser, game.gameName(), game.game());
+                gameDAO.updateGame(newGame);
+            }
         }
 
         String message = String.format("%s has resigned. Game over.", userName);
