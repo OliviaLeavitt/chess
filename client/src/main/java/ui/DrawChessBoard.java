@@ -72,7 +72,8 @@ public class DrawChessBoard {
     }
 
 
-    private static void drawSquare(PrintStream out, ChessBoard board, int row, int col, boolean isBlackPerspective, Collection<ChessMove> highlights) {
+    private static void drawSquare(PrintStream out, ChessBoard board, int row, int col,
+                                   boolean isBlackPerspective, Collection<ChessMove> highlights) {
         out.print(SET_TEXT_COLOR_BLACK);
         int actualCol = isBlackPerspective ? BOARD_SIZE_IN_SQUARES - col - 1 : col;
         int actualRow = isBlackPerspective ? row : BOARD_SIZE_IN_SQUARES - row - 1;
@@ -90,7 +91,9 @@ public class DrawChessBoard {
     }
 
     private static boolean isHighlighted(ChessPosition position, Collection<ChessMove> highlights) {
-        if (highlights == null) return false;
+        if (highlights == null) {
+            return false;
+        }
 
         for (ChessMove move : highlights) {
             if (move.getEndPosition().equals(position)) {

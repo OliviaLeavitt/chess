@@ -35,7 +35,6 @@ public class ChessClient implements NotificationHandler {
     private int currentgameId = 0;
     private State state = State.PRELOGIN;
     private final Gson gson = new Gson();
-    private NotificationHandler notificationHandler;
     private String userName;
     private Game[] games;
 
