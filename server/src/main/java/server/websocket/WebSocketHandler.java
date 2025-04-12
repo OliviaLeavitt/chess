@@ -77,7 +77,15 @@ public class WebSocketHandler {
         ServerMessage loadGameMessage = new LoadGameMessage(game);
         connections.sendOneMessage(userName, game.gameID(),loadGameMessage);
 
-        String joinMessage = String.format("%s has joined the game.", userName);
+        String joinMessage;
+        if (userName.equals(game.whiteUsername())) {
+            joinMessage = String.format("%s has joined the game as White.", userName);
+        } else if (userName.equals(game.blackUsername())) {
+            joinMessage = String.format("%s has joined the game as Black.", userName);
+        } else {
+            joinMessage = String.format("%s has joined the game as an observer.", userName);
+        }
+
         ServerMessage notification = new NotificationMessage(joinMessage);
         connections.broadcast(userName, notification, gameId);
 
@@ -96,6 +104,7 @@ public class WebSocketHandler {
         int gameId = command.gameID();
         Game game = gameDAO.getGame(gameId);
         ChessPosition start = command.getMove().getStartPosition();
+        ChessPosition end = command.getMove().getEndPosition();
         ChessPiece piece = game.game().getBoard().getPiece(start);
         ChessGame.TeamColor currentTurn = game.game().getTeamTurn();
         String whiteUser = game.whiteUsername();
@@ -122,7 +131,7 @@ public class WebSocketHandler {
             Game newGame = new Game(command.gameID(), whiteUser, blackUser, game.gameName(), game.game(), false);
             gameDAO.updateGame(newGame);
         } catch (InvalidMoveException e) {
-            String errorMessage = "Invalid move: " + e.getMessage();
+            String errorMessage = "Invalid move";
             ServerMessage invalidMoveMessage = new ErrorMessage(errorMessage);
             connections.sendOneMessage(userName, game.gameID(), invalidMoveMessage);
             return;
@@ -139,11 +148,11 @@ public class WebSocketHandler {
 
         String gameStatusMessage = "";
         if (isCheckmate) {
-            gameStatusMessage = "Checkmate! Game over.";
+            gameStatusMessage = String.format("Checkmate! %s is in checkmate.", userName);
         } else if (isStalemate) {
-            gameStatusMessage = "Stalemate! Game over.";
+            gameStatusMessage = String.format("Stalemate! No legal moves for %s.", userName);
         } else if (isCheck) {
-            gameStatusMessage = "Check! The king is in danger.";
+            gameStatusMessage = String.format("Check! %s's king is in danger.", userName);
         }
 
         if (!gameStatusMessage.isEmpty()) {
@@ -151,7 +160,7 @@ public class WebSocketHandler {
             connections.broadcast("", notification, gameId);
         }
 
-        String moveMessage = String.format("Move made: %s", command.getMove());
+        String moveMessage = String.format("Move made: from (%d, %d) to (%d, %d)", start.row, start.col, end.row, end.col);
         ServerMessage notification = new NotificationMessage(moveMessage);
         connections.broadcast(userName, notification, gameId);
 
@@ -244,9 +253,9 @@ public class WebSocketHandler {
             }
         }
 
-        String message = String.format("%s has resigned. Game over.", userName);
-        var serverMessage = new NotificationMessage(message);
-        connections.broadcast("", serverMessage, gameId);
+        String resignMessage = String.format("%s has resigned from the game.", userName);
+        ServerMessage notification = new NotificationMessage(resignMessage);
+        connections.broadcast(userName, notification, gameId);
     }
 
 

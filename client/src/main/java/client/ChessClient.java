@@ -34,7 +34,6 @@ public class ChessClient implements NotificationHandler {
     private Game currentGame;
     private int currentgameId = 0;
     private State state = State.PRELOGIN;
-    private final Gson gson = new Gson();
     private String userName;
     private Game[] games;
 
@@ -119,14 +118,26 @@ public class ChessClient implements NotificationHandler {
             return "No legal moves available for this piece.";
         }
 
-        String validMovesString = "Here are your valid move options:\n";
+        StringBuilder validMovesString = new StringBuilder("Here are your valid move options:\n");
         for (ChessMove move : validMoves) {
-            validMovesString += move.toString() + "\n";
+            validMovesString.append(formatMove(move)).append("\n");
         }
 
         DrawChessBoard.drawChessboard(currentGame, currentGame.game().getTeamTurn().toString(), validMoves);
 
-        return validMovesString;
+        return validMovesString.toString();
+    }
+
+    private char[] formatMove(ChessMove move) {
+        String moveString = positionToString(move.getStartPosition()) + " to " + positionToString(move.getEndPosition());
+        return moveString.toCharArray();
+    }
+
+    private String positionToString(ChessPosition startPosition) {
+        char col = (char) ('a' + startPosition.getColumn() - 1);
+        int row = startPosition.getRow();
+        String string = "" + col + row;
+        return string;
     }
 
     private String leaveGame() throws ResponseException {
@@ -143,6 +154,18 @@ public class ChessClient implements NotificationHandler {
 
 
     private String makeMove() {
+
+        if (currentGame.gameOver()) {
+            return "Game over. No more moves can be made.";
+        }
+
+        String currentTurn = currentGame.game().getTeamTurn().toString();
+        if (currentTurn.equals("WHITE") && !userName.equals(currentGame.whiteUsername())) {
+            return "It's not your turn.";
+        } else if (currentTurn.equals("BLACK") && !userName.equals(currentGame.blackUsername())) {
+            return "It's not your turn.";
+        }
+
         Scanner makeMoveScanner = new Scanner(System.in);
         System.out.print("Enter your move (e.g., pawn a2a3 or a7a8 queen): ");
         String userMoveInput = makeMoveScanner.nextLine();
@@ -197,12 +220,17 @@ public class ChessClient implements NotificationHandler {
 
 
             ChessPiece movingPiece = currentGame.game().getBoard().getPiece(startPosition);
+            if (movingPiece == null) {
+                return "Error: No piece selected to move!";
+            }
             Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.game().getBoard(), startPosition);
             if (!validMoves.contains(move)) {
                 return "That move is invalid.";
             }
 
             this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
+
+
             return "Move executed successfully.";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -225,6 +253,7 @@ public class ChessClient implements NotificationHandler {
             User user = new User(username, password, email);
             var auth = server.register(user);
             authToken = auth.authToken();
+            this.userName = username;
             server.setAuthToken(authToken);
             state = State.POSTLOGIN;
             return String.format("Registered and logged in as %s.", user.username());
@@ -277,8 +306,22 @@ public class ChessClient implements NotificationHandler {
         assertSignedIn();
         this.games = server.listGames(authToken);
         var result = new StringBuilder();
-        for (var game : games) {
-            result.append("Game Name: ").append(game.gameName()).append(", Game ID: ").append(game.gameID()).append('\n');
+        for (int i = 0; i < games.length; i++) {
+            Game game = games[i];
+            result.append("Game Name: ").append(game.gameName()).append(", Game ID:  ").append(i+1).append(", Users:");
+
+            if (game.whiteUsername() == null && game.blackUsername() == null) {
+                result.append(" No players yet");
+            }
+
+            if (game.whiteUsername() != null) {
+                result.append(" White: (").append(game.whiteUsername()).append(")");
+            }
+            if (game.blackUsername() != null) {
+                result.append(" Black (").append(game.blackUsername()).append(")");
+            }
+            result.append("\n");
+
         }
         return result.toString();
     }
@@ -287,6 +330,7 @@ public class ChessClient implements NotificationHandler {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
+            this.currentgameId = gameId;
             this.webSocketFacade.connect(authToken, currentgameId, userName);
             return String.format("You are now observing game %d.", gameId);
         }
