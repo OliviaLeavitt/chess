@@ -75,9 +75,14 @@ public class ChessClient implements NotificationHandler {
                     case "highlightmoves" -> highlightLegalMoves();
                     default -> help();
                 };
-
-            }
-            else {
+            } else if (state == State.OBSERVING) {
+                    return switch (cmd) {
+                    case "leave" -> leaveGame();
+                    case "highlightmoves" -> highlightLegalMoves();
+                    case "redrawboard" -> redrawBoard();
+                    default -> help();
+                };
+            } else {
                 throw new IllegalStateException("Invalid client state: " + state);
             }
         } catch (ResponseException ex) {
@@ -224,7 +229,7 @@ public class ChessClient implements NotificationHandler {
             if (movingPiece == null) {
                 return "Error: No piece selected to move!";
             }
-            Collection<ChessMove> validMoves = movingPiece.pieceMoves(currentGame.game().getBoard(), startPosition);
+            Collection<ChessMove> validMoves = currentGame.game().validMoves(startPosition);
             if (!validMoves.contains(move)) {
                 return "That move is invalid.";
             }
@@ -334,6 +339,7 @@ public class ChessClient implements NotificationHandler {
             this.playerColor = "WHITE";
             this.currentgameId = gameId;
             this.webSocketFacade.connect(authToken, currentgameId, userName);
+            state = State.OBSERVING;
             return String.format("You are now observing game %d.", gameId);
         }
         throw new ResponseException(400, "Expected: <gameID>");
@@ -379,6 +385,14 @@ public class ChessClient implements NotificationHandler {
                     highlightmoves - to highlight all legal moves
                     help - to help with possible commands
                     quit - to quit playing chess
+                    """;
+        } else if (state == State.OBSERVING) {
+            return """
+                    Available commands:
+                    redrawboard - to redraw the chess board
+                    leave - to leave the game
+                    highlightmoves - to highlight all legal moves
+                    help - to help with possible commands
                     """;
         }
         return """
