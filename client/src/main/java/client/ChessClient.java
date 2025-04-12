@@ -2,9 +2,7 @@ package client;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Scanner;
+import java.util.*;
 
 import chess.*;
 import client.websocket.NotificationHandler;
@@ -36,7 +34,9 @@ public class ChessClient implements NotificationHandler {
     private State state = State.PRELOGIN;
     private String userName;
     private Game[] games;
+    private boolean resigned = false;
     private String playerColor = null;
+    private Map<Integer, Integer> gameIndexMap = new HashMap<>();
 
     public ChessClient(String serverUrl) throws ResponseException {
         this.serverUrl = serverUrl;
@@ -153,16 +153,30 @@ public class ChessClient implements NotificationHandler {
     }
 
     private String resign() throws ResponseException {
-        this.webSocketFacade.resign(authToken, currentgameId, userName);
-        state = State.POSTLOGIN;
-        return "You have resigned from the game.";
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Are you sure you want to resign? (yes or no): ");
+        String choice = scanner.nextLine().trim().toLowerCase();
+        switch (choice) {
+            case "yes":
+                this.webSocketFacade.resign(authToken, currentgameId, userName);
+                this.resigned = true;
+                return "You have successfully resigned.";
+
+            case "no":
+                return "Resignation has been canceled.";
+
+            default:
+                return "Invalid input. Please answer with 'yes' or 'no'.";
+        }
+
     }
 
 
     private String makeMove() {
 
-        if (currentGame.gameOver()) {
-            return "Game over. No more moves can be made.";
+        if (resigned) {
+            return "You can't make a move because this game has been resigned from";
         }
 
         String currentTurn = currentGame.game().getTeamTurn().toString();
@@ -234,8 +248,8 @@ public class ChessClient implements NotificationHandler {
                 return "That move is invalid.";
             }
 
-            this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
 
+            this.webSocketFacade.makeMove(move, authToken, currentgameId, userName);
 
             return "Move executed successfully.";
         } catch (Exception e) {
@@ -291,42 +305,48 @@ public class ChessClient implements NotificationHandler {
 
     public String createGame(String... params) throws ResponseException, IOException, URISyntaxException {
         assertSignedIn();
-        if (params.length == 1) {
-            try {
-                var gameName = params[0];
-                CreateResult result = server.createGame(gameName);
-
-                this.currentgameId = result.gameID();
-                this.currentGame = result.game();
-                return String.format("Created game: %s (with game id: %d)", gameName, currentgameId);
-            } catch (ResponseException e) {
-                System.out.println("failed in createGame in Client: " + e.getMessage());
-            }
-
-
+        if (params.length != 1) {
+            throw new ResponseException(400, "Expected: creategame <gamename>");
         }
-        throw new ResponseException(400, "Expected: <gameName>");
+
+        String gameName = params[0];
+        CreateResult result = server.createGame(gameName);
+
+        if (result == null || result.gameID() == 0) {
+            return "Failed to create game.";
+        }
+
+        listGames();
+
+        gameIndexMap.clear();
+        for (int i = 0; i < games.length; i++) {
+            gameIndexMap.put(i + 1, games[i].gameID());
+        }
+
+        return String.format("Game '%s' created with ID %d.", gameName, result.gameID());
     }
 
     public String listGames() throws ResponseException {
         assertSignedIn();
         this.games = server.listGames(authToken);
-        var result = new StringBuilder();
+        gameIndexMap.clear();
+
+        if (games.length == 0) {
+            return "No games available.";
+        }
+
+        StringBuilder result = new StringBuilder("Here are the Games:\n");
         for (int i = 0; i < games.length; i++) {
             Game game = games[i];
-            result.append("Game Name: ").append(game.gameName()).append(", Game ID:  ").append(i+1).append(", Users:");
+            int displayNumber = i + 1;
+            gameIndexMap.put(displayNumber, game.gameID());
 
-            if (game.whiteUsername() == null && game.blackUsername() == null) {
-                result.append(" No players yet");
-            }
-
-            if (game.whiteUsername() != null) {
-                result.append(" White: (").append(game.whiteUsername()).append(")");
-            }
-            if (game.blackUsername() != null) {
-                result.append(" Black (").append(game.blackUsername()).append(")");
-            }
+            result.append(displayNumber);
+            result.append(". Game Name: ").append(game.gameName());
+            result.append(" - White: ").append(game.whiteUsername() != null ? game.whiteUsername() : "Open");
+            result.append(" - Black: ").append(game.blackUsername() != null ? game.blackUsername() : "Open");
             result.append("\n");
+
 
         }
         return result.toString();
@@ -334,37 +354,68 @@ public class ChessClient implements NotificationHandler {
 
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
-        if (params.length == 1) {
-            var gameId = Integer.parseInt(params[0]);
-            this.playerColor = "WHITE";
-            this.currentgameId = gameId;
-            this.webSocketFacade.connect(authToken, currentgameId, userName);
-            state = State.OBSERVING;
-            return String.format("You are now observing game %d.", gameId);
+        if (gameIndexMap.isEmpty()) {
+            return "Please use the 'listgames' command before selecting a game to observe.";
         }
-        throw new ResponseException(400, "Expected: <gameID>");
-    }
+        if (params.length != 1) {
+            return "observegame <game number>";
+        }
+        int index = Integer.parseInt(params[0]);
 
+        if (!gameIndexMap.containsKey(index)) {
+            return "Invalid game number.";
+        }
+        int gameId = gameIndexMap.get(index);
+
+        this.playerColor = "WHITE";
+        this.currentgameId = gameId;
+        this.webSocketFacade.connect(authToken, currentgameId, userName);
+        state = State.OBSERVING;
+        return String.format("You are now observing game %d.", gameId);
+    }
     public String playGame(String... params) throws ResponseException {
         assertSignedIn();
-        if (params.length == 2) {
-            var playerColor = params[0].toUpperCase();
-            var gameId = Integer.parseInt(params[1]);
-
-            if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
-                throw new ResponseException(400, "Error: Must be white or black");
-            }
-
-            server.joinGame(playerColor, gameId);
-            this.currentgameId = gameId;
-            this.playerColor = playerColor;
-
-            state = State.INGAME;
-            this.webSocketFacade.connect(authToken, currentgameId, userName);
-            return String.format("Joined game %d as player %s.", gameId, playerColor);
+        if (gameIndexMap.isEmpty()) {
+            return "Please use the 'listgames' command before selecting a game to play.";
         }
-        throw new ResponseException(400, "Error: Expected: playgame <WHITE or BLACK> <game number>");
+        if (params.length != 2) {
+            return "playgame <white|black> <game number>";
+        }
+
+        var playerColor = params[0].toUpperCase();
+        var index = Integer.parseInt(params[1]);
+
+        Integer gameID = gameIndexMap.get(index);
+        if (gameID == null) {
+            return "Invalid game number.";
+        }
+        Game selectedGame = null;
+        for (Game g : games) {
+            if (g.gameID() == gameID) {
+                selectedGame = g;
+                break;
+            }
+        }
+
+        if (selectedGame == null) {
+            return "Game not found.";
+        }
+
+        if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
+            throw new ResponseException(400, "Error: Must be white or black");
+        }
+
+        int gameId = gameIndexMap.get(index);
+        server.joinGame(playerColor, gameId);
+
+        this.currentgameId = gameId;
+        this.playerColor = playerColor;
+        state = State.INGAME;
+        this.webSocketFacade.connect(authToken, currentgameId, userName);
+
+        return String.format("Joined game %d as player %s.", gameId, playerColor);
     }
+
 
     public String help() {
         if (state == State.PRELOGIN) {

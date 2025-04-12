@@ -111,7 +111,7 @@ public class WebSocketHandler {
         String blackUser = game.blackUsername();
 
         if (game.gameOver()) {
-            var errorMessage = "can't move if game is over";
+            var errorMessage = "can't move if game is over or if you have resigned";
             var errorServerMessage = new ErrorMessage(errorMessage);
             session.getRemote().sendString(new Gson().toJson(errorServerMessage));
             return;
@@ -147,12 +147,13 @@ public class WebSocketHandler {
 
 
         String gameStatusMessage = "";
+        String opponentUser = currentPlayerColor == ChessGame.TeamColor.WHITE ? whiteUser : blackUser;
         if (isCheckmate) {
-            gameStatusMessage = String.format("Checkmate! %s is in checkmate.", userName);
+            gameStatusMessage = String.format("Checkmate! %s is in checkmate.", opponentUser);
         } else if (isStalemate) {
-            gameStatusMessage = String.format("Stalemate! No legal moves for %s.", userName);
+            gameStatusMessage = String.format("Stalemate! No legal moves for %s.", opponentUser);
         } else if (isCheck) {
-            gameStatusMessage = String.format("Check! %s's king is in danger.", userName);
+            gameStatusMessage = String.format("Check! %s's king is in danger.", opponentUser);
         }
 
         if (!gameStatusMessage.isEmpty()) {
@@ -160,7 +161,7 @@ public class WebSocketHandler {
             connections.broadcast("", notification, gameId);
         }
 
-        String moveMessage = String.format("Move made: from (%d, %d) to (%d, %d)", start.row, start.col, end.row, end.col);
+        String moveMessage = String.format("%s made a move: from (%d, %d) to (%d, %d)", userName, start.row, start.col, end.row, end.col);
         ServerMessage notification = new NotificationMessage(moveMessage);
         connections.broadcast(userName, notification, gameId);
 
