@@ -36,6 +36,7 @@ public class ChessClient implements NotificationHandler {
     private State state = State.PRELOGIN;
     private String userName;
     private Game[] games;
+    private String playerColor = null;
 
     public ChessClient(String serverUrl) throws ResponseException {
         this.serverUrl = serverUrl;
@@ -123,7 +124,7 @@ public class ChessClient implements NotificationHandler {
             validMovesString.append(formatMove(move)).append("\n");
         }
 
-        DrawChessBoard.drawChessboard(currentGame, currentGame.game().getTeamTurn().toString(), validMoves);
+        DrawChessBoard.drawChessboard(currentGame, playerColor, validMoves);
 
         return validMovesString.toString();
     }
@@ -240,7 +241,7 @@ public class ChessClient implements NotificationHandler {
 
     private String redrawBoard() {
         String currentTurn = currentGame.game().getTeamTurn().toString();
-        DrawChessBoard.drawChessboard(currentGame, currentTurn, null);
+        DrawChessBoard.drawChessboard(currentGame, playerColor, null);
         return "Here is your board";
 
     }
@@ -330,6 +331,7 @@ public class ChessClient implements NotificationHandler {
         assertSignedIn();
         if (params.length == 1) {
             var gameId = Integer.parseInt(params[0]);
+            this.playerColor = "WHITE";
             this.currentgameId = gameId;
             this.webSocketFacade.connect(authToken, currentgameId, userName);
             return String.format("You are now observing game %d.", gameId);
@@ -349,6 +351,7 @@ public class ChessClient implements NotificationHandler {
 
             server.joinGame(playerColor, gameId);
             this.currentgameId = gameId;
+            this.playerColor = playerColor;
 
             state = State.INGAME;
             this.webSocketFacade.connect(authToken, currentgameId, userName);
